@@ -77,7 +77,7 @@ export default function LeadForm() {
                 className="w-full h-9 rounded-md border border-input bg-input-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
               >
                 <option value="">Select a program</option>
-                <option>Personal Development</option>
+                <option> Personality Development Masterclass</option>
                 <option>Boot camp</option>
                 <option>Hire Mridu as an Anchor</option>
               </select>
