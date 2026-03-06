@@ -7,7 +7,7 @@ import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import PopUp from "./components/PopUp";
 import LeadForm from "./components/form";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import logo from "./assets/b7d3ac7bd9cd86ae14e5728a83d5cc97ab7a3e8b.png";
+import logo from "./assets/logo.png";
 import heroImage from "./assets/img2.jpg";
 import program1 from "./assets/img4.jpeg";
 import program2 from "./assets/img5.JPG";
