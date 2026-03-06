@@ -5,7 +5,6 @@ import { Badge } from "./components/ui/badge";
 import { Calendar, Users, Briefcase, TrendingUp, Target, Zap, CheckCircle2, ArrowRight, BookOpen, Mic, Star, Award, PlayCircle, Video } from "lucide-react";
 import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import PopUp from "./components/PopUp";
-import WhatsAppBot from "./components/WhatsAppBot";
 import LeadForm from "./components/form";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import logo from "./assets/b7d3ac7bd9cd86ae14e5728a83d5cc97ab7a3e8b.png";
@@ -251,7 +250,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white">
       <PopUp />
-      <WhatsAppBot />
 
       {/* Promotional Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white py-3 px-6 overflow-hidden">
