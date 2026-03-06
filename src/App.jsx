@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "./components/ui/button";
 import { Card, CardContent } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
@@ -105,7 +105,7 @@ const programs = [
     badgeBg: "rgba(99, 102, 241, 0.12)",
     badgeColor: "#6366f1",
     badgeBorder: "rgba(99, 102, 241, 0.3)",
-    seatLabel: "50% off - 50 seats left",
+    seatLabel: "Limited Seats",
     title: "Speak with Impact Bootcamp",
     description: "The Speak with Impact Bootcamp is a two-day immersive learning experience designed to help professionals develop confident communication and structured thinking for the modern workplace.",
     cardBg: "linear-gradient(145deg, #ffffff 0%, #f5f3ff 100%)",
@@ -119,18 +119,99 @@ const programs = [
     divider: "rgba(99, 102, 241, 0.15)",
     tileBg: "rgba(99, 102, 241, 0.06)",
     tileBorder: "rgba(99, 102, 241, 0.15)",
-    date: "28-29 March 2026",
-    price: "Rs 7,999",
-    originalPrice: null,
-    priceNote: "50% off for next 50 seats",
+    date: "28–29 March 2026",
+    price: "₹3,999",
+    originalPrice: "₹7,999",
+    priceNote: "50% Early Bird Discount",
     features: bootcampFeatures,
     checkBg: "rgba(99,102,241,0.12)",
     checkColor: "#6366f1",
     btnBg: "linear-gradient(135deg, #4f46e5, #7c3aed)",
     btnColor: "#fff",
-    cta: "Reserve My Seat Now",
+    cta: "🚀 Reserve My Seat – ₹3,999",
+    isBootcamp: true,
+    paymentLink: "https://rzp.io/l/xyXPRm3",
   },
 ];
+
+// Countdown + seat counter for bootcamp card
+const RAZORPAY_LINK = "https://rzp.io/l/xyXPRm3";
+const TOTAL_SEATS = 50;
+const INITIAL_SEATS_SOLD = 13;
+// Early bird ends March 14 2026 23:59:59 IST
+const EARLY_BIRD_END = new Date("2026-03-14T23:59:59+05:30").getTime();
+
+function getTimeLeft() {
+  const diff = EARLY_BIRD_END - Date.now();
+  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, over: true };
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  return { days, hours, minutes, seconds, over: false };
+}
+
+function pad(n) { return String(n).padStart(2, "0"); }
+
+function BootcampUrgencyBlock({ accent }) {
+  const [timeLeft, setTimeLeft] = useState(getTimeLeft());
+  const [seatsLeft, setSeatsLeft] = useState(TOTAL_SEATS - INITIAL_SEATS_SOLD);
+  const seatsRef = useRef(seatsLeft);
+
+  useEffect(() => {
+    const clockId = setInterval(() => setTimeLeft(getTimeLeft()), 1000);
+    return () => clearInterval(clockId);
+  }, []);
+
+  useEffect(() => {
+    // Decrease seats every 30–60 s, but never below 10
+    const scheduleDecrement = () => {
+      const delay = 30000 + Math.random() * 30000;
+      return setTimeout(() => {
+        if (seatsRef.current > 10) {
+          seatsRef.current -= 1;
+          setSeatsLeft(seatsRef.current);
+        }
+        timerId.current = scheduleDecrement();
+      }, delay);
+    };
+    const timerId = { current: scheduleDecrement() };
+    return () => clearTimeout(timerId.current);
+  }, []);
+
+  return (
+    <div style={{ margin: "0 0 18px", display: "flex", flexDirection: "column", gap: "10px" }}>
+      {/* Seat counter */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: "8px",
+        background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)",
+        borderRadius: "10px", padding: "9px 14px",
+      }}>
+        <span style={{ fontSize: "16px" }}>⚡</span>
+        <span style={{ fontSize: "13px", fontWeight: 700, color: "#dc2626", letterSpacing: "0.01em" }}>
+          Only {seatsLeft} / {TOTAL_SEATS} seats left
+        </span>
+        <div style={{ flex: 1, height: "6px", borderRadius: "99px", background: "rgba(239,68,68,0.15)", overflow: "hidden", marginLeft: "4px" }}>
+          <div style={{ height: "100%", width: `${(seatsLeft / TOTAL_SEATS) * 100}%`, background: "linear-gradient(90deg,#ef4444,#f87171)", borderRadius: "99px", transition: "width 1s ease" }} />
+        </div>
+      </div>
+      {/* Countdown */}
+      {!timeLeft.over && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: "8px",
+          background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.22)",
+          borderRadius: "10px", padding: "9px 14px",
+        }}>
+          <span style={{ fontSize: "15px" }}>⏳</span>
+          <span style={{ fontSize: "12px", color: "#6366f1", fontWeight: 600 }}>Early bird ends in&nbsp;</span>
+          <span style={{ fontSize: "13px", fontWeight: 800, color: "#4f46e5", fontVariantNumeric: "tabular-nums" }}>
+            {pad(timeLeft.days)}d : {pad(timeLeft.hours)}h : {pad(timeLeft.minutes)}m : {pad(timeLeft.seconds)}s
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ProgramCard({ program }) {
   const [hovered, setHovered] = useState(false);
@@ -178,6 +259,25 @@ function ProgramCard({ program }) {
         <div style={{ position: "absolute", top: 0, right: 0, width: "200px", height: "200px", background: program.accentGlow, borderRadius: "0 24px 0 100%", opacity: 0.4, pointerEvents: "none" }} />
 
         <div style={{ padding: "28px 32px 0", position: "relative" }}>
+          {/* Early Bird badge — only for bootcamp */}
+          {program.isBootcamp && (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              marginBottom: "14px",
+            }}>
+              <span style={{
+                background: "linear-gradient(135deg,#f59e0b,#ef4444)",
+                color: "#fff", fontSize: "12px", fontWeight: 800,
+                letterSpacing: "0.08em", padding: "7px 18px",
+                borderRadius: "100px", textTransform: "uppercase",
+                boxShadow: "0 2px 12px rgba(239,68,68,0.35)",
+                animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
+              }}>
+                🔥 50% OFF – Early Bird
+              </span>
+            </div>
+          )}
+
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
             <span style={{ background: program.badgeBg, color: program.badgeColor, fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", padding: "6px 14px", borderRadius: "100px", textTransform: "uppercase", border: `1px solid ${program.badgeBorder}` }}>
               {program.badge}
@@ -230,16 +330,51 @@ function ProgramCard({ program }) {
         </div>
 
         <div style={{ padding: "0 32px 32px" }}>
-          <motion.a
-            href="#lead-form"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            style={{ width: "100%", padding: "18px 24px", background: program.btnBg, color: program.btnColor, border: "none", borderRadius: "14px", fontSize: "16px", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "filter 0.2s", letterSpacing: "0.01em" }}
-            onMouseEnter={(event) => { event.currentTarget.style.filter = "brightness(1.08)"; }}
-            onMouseLeave={(event) => { event.currentTarget.style.filter = "brightness(1)"; }}
-          >
-            {program.cta} <ArrowRightIcon />
-          </motion.a>
+          {/* Urgency block for bootcamp only */}
+          {program.isBootcamp && <BootcampUrgencyBlock accent={program.accent} />}
+
+          {program.isBootcamp ? (
+            <motion.a
+              href={RAZORPAY_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              style={{
+                width: "100%", padding: "18px 24px",
+                background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+                color: "#fff", border: "none", borderRadius: "14px",
+                fontSize: "16px", fontWeight: 800,
+                fontFamily: "'DM Sans', sans-serif", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                gap: "10px", letterSpacing: "0.01em",
+                boxShadow: "0 4px 20px rgba(99,102,241,0.45)",
+                textDecoration: "none",
+                transition: "filter 0.2s, box-shadow 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.filter = "brightness(1.12)";
+                e.currentTarget.style.boxShadow = "0 8px 32px rgba(99,102,241,0.6)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.filter = "brightness(1)";
+                e.currentTarget.style.boxShadow = "0 4px 20px rgba(99,102,241,0.45)";
+              }}
+            >
+              {program.cta} <ArrowRightIcon />
+            </motion.a>
+          ) : (
+            <motion.a
+              href="#lead-form"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              style={{ width: "100%", padding: "18px 24px", background: program.btnBg, color: program.btnColor, border: "none", borderRadius: "14px", fontSize: "16px", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "filter 0.2s", letterSpacing: "0.01em", textDecoration: "none" }}
+              onMouseEnter={(event) => { event.currentTarget.style.filter = "brightness(1.08)"; }}
+              onMouseLeave={(event) => { event.currentTarget.style.filter = "brightness(1)"; }}
+            >
+              {program.cta} <ArrowRightIcon />
+            </motion.a>
+          )}
         </div>
       </div>
     </motion.div>
@@ -253,7 +388,7 @@ export default function App() {
 
       {/* Promotional Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white py-3 px-6 overflow-hidden">
-        <motion.div 
+        <motion.div
           initial={{ x: "100%" }}
           animate={{ x: "-100%" }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -274,7 +409,7 @@ export default function App() {
       {/* Navigation */}
       <nav className="sticky top-0 bg-white/90 backdrop-blur-lg border-b border-slate-200 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-3"
@@ -299,7 +434,7 @@ export default function App() {
         {/* Background decorative elements */}
         <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200 rounded-full blur-3xl opacity-20"></div>
         <div className="absolute bottom-20 left-10 w-96 h-96 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
-        
+
         <div className="max-w-7xl mx-auto relative z-10">
           {/* <motion.div
             initial={{ opacity: 0, y: -14 }}
@@ -319,7 +454,7 @@ export default function App() {
 
           <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             {/* Heading - Order 1 on mobile */}
-            <motion.h1 
+            <motion.h1
               variants={fadeInUp}
               className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight order-1 lg:col-span-1"
             >
@@ -327,7 +462,7 @@ export default function App() {
             </motion.h1>
 
             {/* Right Side - Image with Floating Elements - Order 2 on mobile */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
@@ -422,7 +557,7 @@ export default function App() {
             </motion.div>
 
             {/* Remaining Content - Order 3 on mobile */}
-            <motion.div 
+            <motion.div
               initial="initial"
               animate="animate"
               variants={staggerContainer}
@@ -438,7 +573,7 @@ export default function App() {
                     <p className="text-slate-600">24×7 intelligent mentorship support</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
                     <Users className="w-6 h-6 text-white" />
@@ -448,7 +583,7 @@ export default function App() {
                     <p className="text-slate-600">Interactive sessions with industry experts</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
                     <Award className="w-6 h-6 text-white" />
@@ -470,7 +605,7 @@ export default function App() {
               </motion.div>
 
               {/* Social Proof */}
-              <motion.div 
+              <motion.div
                 variants={fadeInUp}
                 className="flex items-center gap-6 pt-4"
               >
@@ -539,7 +674,7 @@ export default function App() {
                 className="rounded-2xl shadow-lg w-full object-cover aspect-[4/3]"
               />
             </motion.div>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -553,12 +688,12 @@ export default function App() {
                 Bridge the Gap Between <span className="text-blue-600">Knowledge and Influence</span>
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed">
-                Many professionals have strong expertise but struggle to communicate ideas with clarity and confidence. 
-                MentorLeap provides structured frameworks that help individuals express ideas effectively, 
+                Many professionals have strong expertise but struggle to communicate ideas with clarity and confidence.
+                MentorLeap provides structured frameworks that help individuals express ideas effectively,
                 build executive presence, and lead conversations with authority.
               </p>
               <p className="text-lg text-slate-600 leading-relaxed">
-                Founded by <span className="font-semibold text-blue-600">award-winning journalist and leadership moderator Mridu Bhandari</span>, 
+                Founded by <span className="font-semibold text-blue-600">award-winning journalist and leadership moderator Mridu Bhandari</span>,
                 the platform combines real-world communication experience with AI-powered learning tools.
               </p>
             </motion.div>
@@ -579,7 +714,7 @@ export default function App() {
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -678,7 +813,7 @@ export default function App() {
       {/* Programs Section with Images */}
       <section id="programs" className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -708,7 +843,7 @@ export default function App() {
                     </div>
                     <h3 className="text-3xl font-bold text-slate-900 mb-3">Executive Coaching</h3>
                     <p className="text-lg text-slate-600 mb-4">
-                      Personalized coaching programs focused on leadership communication and executive presence. 
+                      Personalized coaching programs focused on leadership communication and executive presence.
                       One-on-one sessions designed to elevate your professional impact.
                     </p>
                     <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white w-fit">
@@ -750,7 +885,7 @@ export default function App() {
                     </div>
                     <h3 className="text-3xl font-bold text-slate-900 mb-3">Live Events</h3>
                     <p className="text-lg text-slate-600 mb-4">
-                      Bootcamps and masterclasses designed to develop confidence and communication clarity. 
+                      Bootcamps and masterclasses designed to develop confidence and communication clarity.
                       Immersive learning experiences with real-time practice.
                     </p>
                     <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white w-fit">
@@ -776,7 +911,7 @@ export default function App() {
                     </div>
                     <h3 className="text-3xl font-bold text-slate-900 mb-3">Resource Library</h3>
                     <p className="text-lg text-slate-600 mb-4">
-                      Digital courses and structured leadership frameworks. Access curated content and proven 
+                      Digital courses and structured leadership frameworks. Access curated content and proven
                       methodologies at your own pace.
                     </p>
                     <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white w-fit">
@@ -817,7 +952,7 @@ export default function App() {
                     </div>
                     <h3 className="text-3xl font-bold text-slate-900 mb-3">Hire Mridu</h3>
                     <p className="text-lg text-slate-600 mb-4">
-                      Professional moderation, event hosting, and leadership speaking engagements. 
+                      Professional moderation, event hosting, and leadership speaking engagements.
                       Bring award-winning expertise to your next event.
                     </p>
                     <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white w-fit">
@@ -831,7 +966,7 @@ export default function App() {
         </div>
       </section>
 
-                  {/* Upcoming Programs */}
+      {/* Upcoming Programs */}
       <section
         className="programs-section"
         style={{
@@ -954,7 +1089,7 @@ export default function App() {
       {/* Why Choose MentorLeap */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -996,7 +1131,7 @@ export default function App() {
       <section id="corporate" className="py-20 px-6 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -1019,7 +1154,7 @@ export default function App() {
                 </a>
               </Button>
             </motion.div>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -1039,7 +1174,7 @@ export default function App() {
 
       {/* Final CTA Section */}
       <section className="py-24 px-6 bg-gradient-to-br from-blue-600 to-blue-700 text-white">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
