@@ -724,7 +724,7 @@ export default function App() {
               <Zap className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Meet MISHA</h2>
-            <p className="text-xl text-slate-600">Mentorship & Intelligence for Strategic Human Advancement</p>
+            <p className="text-xl text-slate-600">Your AI Powered Learning Assistant</p>
           </motion.div>
 
           <div className="grid lg:grid-cols-2 gap-8 mb-12">

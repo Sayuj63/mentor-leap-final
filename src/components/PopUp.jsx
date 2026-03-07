@@ -19,9 +19,9 @@ export default function PopUp() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl p-0 overflow-hidden border-white-200">
-        <div className="grid md:grid-cols-2">
-          <div className="relative h-56 md:h-full">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl p-0 overflow-y-auto max-h-[90vh] border-slate-200">
+        <div className="flex flex-col md:grid md:grid-cols-2">
+          <div className="relative h-48 sm:h-56 md:h-full shrink-0">
             <img
               src={popupImage}
               alt="Free Personality Development Masterclass"

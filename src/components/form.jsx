@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 
 export default function LeadForm() {
-  const receivingEmail = import.meta.env.VITE_FORMSUBMIT_EMAIL || "teammarktaleworld@gmail.com" ;
+  const receivingEmail = "mentorleap.india@gmail.com";
   const ccEmail = import.meta.env.VITE_FORMSUBMIT_CC || "";
+  const [selectedProgram, setSelectedProgram] = useState("");
+  const isBootcamp = selectedProgram === "Boot camp";
 
   return (
     <section id="lead-form" className="py-20 px-6 bg-slate-50">
@@ -28,6 +31,7 @@ export default function LeadForm() {
           <input type="hidden" name="_template" value="table" />
           <input type="text" name="_honey" className="hidden" tabIndex={-1} autoComplete="off" />
           {ccEmail ? <input type="hidden" name="_cc" value={ccEmail} /> : null}
+          {isBootcamp && <input type="hidden" name="_next" value="https://rzp.io/l/xyXPRm3" />}
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -74,12 +78,14 @@ export default function LeadForm() {
                 id="program_interest"
                 name="program_interest"
                 required
+                value={selectedProgram}
+                onChange={(e) => setSelectedProgram(e.target.value)}
                 className="w-full h-9 rounded-md border border-input bg-input-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
               >
                 <option value="">Select a program</option>
-                <option> Personality Development Masterclass</option>
-                <option>Boot camp</option>
-                <option>Hire Mridu as an Anchor</option>
+                <option value="Personality Development Masterclass">Personality Development Masterclass</option>
+                <option value="Boot camp">Boot camp</option>
+                <option value="Hire Mridu as an Anchor">Hire Mridu as an Anchor</option>
               </select>
             </div>
           </div>
@@ -90,7 +96,7 @@ export default function LeadForm() {
           </div>
 
           <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white h-11 text-base">
-            Submit
+            {isBootcamp ? "Proceed to Payment" : "Submit"}
           </Button>
 
           <p className="text-xs text-slate-500">
