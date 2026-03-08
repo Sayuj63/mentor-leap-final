@@ -88,7 +88,7 @@ const programs = [
     divider: "rgba(16, 185, 129, 0.15)",
     tileBg: "rgba(16, 185, 129, 0.06)",
     tileBorder: "rgba(16, 185, 129, 0.15)",
-    date: "15 March 2026",
+    date: "15 March 2026, 07:30 PM",
     price: "Free",
     originalPrice: "Value Rs 2,999",
     priceNote: null,

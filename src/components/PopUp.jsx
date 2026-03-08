@@ -43,6 +43,21 @@ export default function PopUp() {
               </DialogDescription>
             </DialogHeader>
 
+            <div className="mt-5 space-y-2.5 px-0.5">
+              <div className="flex items-center gap-2.5 text-sm text-slate-700">
+                <span className="text-base text-blue-600">📅</span>
+                <span><strong>Date:</strong> 15th March 2026</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-sm text-slate-700">
+                <span className="text-base text-blue-600">⏰</span>
+                <span><strong>Time:</strong> 07:30 PM – 08:30 PM</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-sm text-slate-700">
+                <span className="text-base text-blue-600">🌐</span>
+                <span><strong>Venue:</strong> Live Online</span>
+              </div>
+            </div>
+
             <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm text-slate-600">Course Fee</p>
               <div className="flex items-center gap-3 mt-1">
