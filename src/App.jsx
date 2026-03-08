@@ -1225,6 +1225,19 @@ export default function App() {
           <p className="text-slate-500 text-sm mt-4">© 2026 MentorLeap. Founded by Mridu Bhandari.</p>
         </div>
       </footer>
+
+      {/* Floating WhatsApp MISHA Button */}
+      <a
+        href="https://wa.me/919892322427"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3.5 rounded-full shadow-2xl shadow-blue-900/30 hover:shadow-blue-900/50 transition-all hover:-translate-y-1 border border-white/20"
+      >
+        <div className="bg-white/20 p-1.5 rounded-full flex items-center justify-center">
+          <Zap className="w-5 h-5 text-white" fill="currentColor" />
+        </div>
+        <span className="font-bold text-sm tracking-wider">ASK ANYTHING</span>
+      </a>
     </div>
   );
 }
