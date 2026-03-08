@@ -419,7 +419,14 @@ function MasterclassAnnouncementBar() {
 
   return (
     <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white py-2.5 px-4 sm:px-6 relative z-[60]">
-      <div className="max-w-7xl mx-auto flex flex-row items-center justify-center gap-4 sm:gap-6 text-sm">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6 text-sm">
+
+        <div className="flex items-center justify-center gap-2 text-center md:text-left hidden sm:flex">
+          <span className="animate-pulse">🔥</span>
+          <span className="font-bold tracking-wide text-xs sm:text-sm uppercase text-yellow-300">
+            Hurry! Free Masterclass Starts In:
+          </span>
+        </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 rounded-md px-3 py-1 font-mono text-sm sm:text-base shadow-inner">
           <div className="flex flex-col items-center w-6">
