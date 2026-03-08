@@ -418,14 +418,8 @@ function MasterclassAnnouncementBar() {
   if (timeLeft.over) return null;
 
   return (
-    <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white py-2.5 px-4 sm:px-6 relative z-50">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-6 text-sm">
-        <div className="flex items-center justify-center gap-2 text-center md:text-left">
-          <span className="animate-pulse">🔴</span>
-          <span className="font-semibold tracking-wide text-[13px] sm:text-sm">
-            Free Masterclass: 15th March, 07:30 PM
-          </span>
-        </div>
+    <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white py-2.5 px-4 sm:px-6 relative z-[60]">
+      <div className="max-w-7xl mx-auto flex flex-row items-center justify-center gap-4 sm:gap-6 text-sm">
 
         <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 rounded-md px-3 py-1 font-mono text-sm sm:text-base shadow-inner">
           <div className="flex flex-col items-center w-6">
@@ -449,8 +443,8 @@ function MasterclassAnnouncementBar() {
           </div>
         </div>
 
-        <Button asChild size="sm" className="h-8 bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg text-xs font-bold tracking-wide w-full md:w-auto mt-1 md:mt-0">
-          <a href="#lead-form">Reserve My Seat</a>
+        <Button asChild size="sm" className="h-8 bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg text-xs font-bold tracking-wide md:w-auto mt-0">
+          <a href="#lead-form">Enroll Now</a>
         </Button>
       </div>
     </div>
@@ -462,31 +456,33 @@ export default function App() {
     <div className="min-h-screen bg-white">
       <PopUp />
 
-      {/* Promotional Banner */}
-      <MasterclassAnnouncementBar />
+      <div className="sticky top-0 z-[60] flex flex-col w-full shadow-sm">
+        {/* Promotional Banner */}
+        <MasterclassAnnouncementBar />
 
-      {/* Navigation */}
-      <nav className="sticky top-0 bg-white/90 backdrop-blur-lg border-b border-slate-200 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
-          >
-            <img src={logo} alt="MentorLeap" className="w-12 h-12" />
-            <span className="text-2xl font-bold text-slate-800">MentorLeap</span>
-          </motion.div>
-          <div className="hidden md:flex gap-8">
-            <a href="#about" className="text-slate-600 hover:text-blue-600 transition-colors">About</a>
-            <a href="#misha" className="text-slate-600 hover:text-blue-600 transition-colors">MISHA</a>
-            <a href="#programs" className="text-slate-600 hover:text-blue-600 transition-colors">Programs</a>
-            <a href="#corporate" className="text-slate-600 hover:text-blue-600 transition-colors">Corporate</a>
+        {/* Navigation */}
+        <nav className="bg-white/90 backdrop-blur-lg border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3"
+            >
+              <img src={logo} alt="MentorLeap" className="w-12 h-12" />
+              <span className="text-2xl font-bold text-slate-800">MentorLeap</span>
+            </motion.div>
+            <div className="hidden md:flex gap-8">
+              <a href="#about" className="text-slate-600 hover:text-blue-600 transition-colors">About</a>
+              <a href="#misha" className="text-slate-600 hover:text-blue-600 transition-colors">MISHA</a>
+              <a href="#programs" className="text-slate-600 hover:text-blue-600 transition-colors">Programs</a>
+              <a href="#corporate" className="text-slate-600 hover:text-blue-600 transition-colors">Corporate</a>
+            </div>
+            <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+              <a href="#lead-form">Enroll Now</a>
+            </Button>
           </div>
-          <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-            <a href="#lead-form">Enroll Now</a>
-          </Button>
-        </div>
-      </nav>
+        </nav>
+      </div>
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-24 px-6 bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-50 overflow-hidden">
