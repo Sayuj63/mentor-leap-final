@@ -7,7 +7,7 @@ export default function LeadForm() {
   const receivingEmail = "mentorleap.india@gmail.com";
   const ccEmail = import.meta.env.VITE_FORMSUBMIT_CC || "";
   const [selectedProgram, setSelectedProgram] = useState("");
-  const isBootcamp = selectedProgram === "Boot camp";
+  const isBootcamp = selectedProgram === "Speak with Impact Bootcamp";
 
   return (
     <section id="lead-form" className="py-20 px-6 bg-slate-50">
@@ -84,7 +84,7 @@ export default function LeadForm() {
               >
                 <option value="">Select a program</option>
                 <option value="Personality Development Masterclass">Personality Development Masterclass</option>
-                <option value="Boot camp">Boot camp</option>
+                <option value="Speak with Impact Bootcamp">Speak with Impact Bootcamp</option>
                 <option value="Hire Mridu as an Anchor">Hire Mridu as an Anchor</option>
               </select>
             </div>
