@@ -381,30 +381,89 @@ function ProgramCard({ program }) {
   );
 }
 
+const MASTERCLASS_DATE = new Date("2026-03-15T19:30:00+05:30").getTime();
+
+function MasterclassAnnouncementBar() {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const diff = MASTERCLASS_DATE - Date.now();
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, over: true };
+    return {
+      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      over: false
+    };
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const diff = MASTERCLASS_DATE - Date.now();
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, over: true });
+        clearInterval(timer);
+      } else {
+        setTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((diff % (1000 * 60)) / 1000),
+          over: false
+        });
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  if (timeLeft.over) return null;
+
+  return (
+    <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white py-2.5 px-4 sm:px-6 relative z-50">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 sm:gap-6 text-sm">
+        <div className="flex items-center justify-center gap-2 text-center md:text-left">
+          <span className="animate-pulse">🔴</span>
+          <span className="font-semibold tracking-wide text-[13px] sm:text-sm">
+            Free Masterclass: 15th March, 07:30 PM
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 rounded-md px-3 py-1 font-mono text-sm sm:text-base shadow-inner">
+          <div className="flex flex-col items-center w-6">
+            <span className="font-bold text-blue-300 leading-none">{pad(timeLeft.days)}</span>
+            <span className="text-[9px] uppercase tracking-wider text-slate-400 mt-0.5">d</span>
+          </div>
+          <span className="text-slate-500 font-bold mb-1">:</span>
+          <div className="flex flex-col items-center w-6">
+            <span className="font-bold text-blue-300 leading-none">{pad(timeLeft.hours)}</span>
+            <span className="text-[9px] uppercase tracking-wider text-slate-400 mt-0.5">h</span>
+          </div>
+          <span className="text-slate-500 font-bold mb-1">:</span>
+          <div className="flex flex-col items-center w-6">
+            <span className="font-bold text-blue-300 leading-none">{pad(timeLeft.minutes)}</span>
+            <span className="text-[9px] uppercase tracking-wider text-slate-400 mt-0.5">m</span>
+          </div>
+          <span className="text-slate-500 font-bold mb-1">:</span>
+          <div className="flex flex-col items-center w-6">
+            <span className="font-bold text-emerald-400 leading-none">{pad(timeLeft.seconds)}</span>
+            <span className="text-[9px] uppercase tracking-wider text-slate-400 mt-0.5">s</span>
+          </div>
+        </div>
+
+        <Button asChild size="sm" className="h-8 bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg text-xs font-bold tracking-wide w-full md:w-auto mt-1 md:mt-0">
+          <a href="#lead-form">Reserve My Seat</a>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <div className="min-h-screen bg-white">
       <PopUp />
 
       {/* Promotional Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white py-3 px-6 overflow-hidden">
-        <motion.div
-          initial={{ x: "100%" }}
-          animate={{ x: "-100%" }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="whitespace-nowrap text-center"
-        >
-          <span className="inline-flex items-center gap-4 text-sm md:text-base">
-            <span>🚀 Free Personality Development Course by Mridu Bhandari 🎯</span>
-            <span className="text-slate-400">|</span>
-            <span>Course for <span className="line-through text-slate-400">₹2,999</span> <span className="text-green-400 font-semibold">FREE</span></span>
-            <span className="text-slate-400">|</span>
-            <span>🚀 Free Personality Development Course by Mridu Bhandari 🎯</span>
-            <span className="text-slate-400">|</span>
-            <span>Course for <span className="line-through text-slate-400">₹2,999</span> <span className="text-green-400 font-semibold">FREE</span></span>
-          </span>
-        </motion.div>
-      </div>
+      <MasterclassAnnouncementBar />
 
       {/* Navigation */}
       <nav className="sticky top-0 bg-white/90 backdrop-blur-lg border-b border-slate-200 z-50">
