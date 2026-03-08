@@ -645,8 +645,8 @@ export default function App() {
               <p className="text-sm text-slate-600">Leadership Bootcamp</p>
             </div>
             <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 text-center">
-              <p className="text-3xl font-bold text-blue-600 mb-1">₹2,999</p>
-              <p className="text-sm text-slate-600 line-through">Course Value</p>
+              <p className="text-3xl font-bold text-blue-600 mb-1 line-through decoration-slate-400">₹2,999</p>
+              <p className="text-sm text-slate-600">Course Value</p>
               <p className="text-xs font-semibold text-green-600">FREE Now!</p>
             </div>
             <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 text-center">
