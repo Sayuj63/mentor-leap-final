@@ -529,7 +529,7 @@ export default function App() {
                   <p className="text-center">
                     <span className="text-sm text-slate-600">with</span> <span className="font-bold text-slate-900 text-lg">Mridu Bhandari</span>
                   </p>
-                  <p className="text-xs text-slate-500 text-center">Award-Winning Journalist & Leadership Moderator</p>
+                  <p className="text-xs text-slate-500 text-center">Award-Winning Journalist & Leadership Communication Coach</p>
                 </div>
               </motion.div>
 
