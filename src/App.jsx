@@ -256,6 +256,36 @@ function ProgramCard({ program }) {
           boxShadow: hovered ? program.shadowHover : program.shadow,
         }}
       >
+        {program.isBootcamp && (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(255, 255, 255, 0.5)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <div style={{
+              background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+              color: "#fff",
+              padding: "16px 32px",
+              borderRadius: "100px",
+              fontWeight: 800,
+              fontSize: "18px",
+              boxShadow: "0 10px 30px rgba(99,102,241,0.4)",
+              transform: "rotate(-5deg)",
+              border: "4px solid rgba(255,255,255,0.8)",
+              textAlign: "center"
+            }}>
+              🤫 Surprise!<br />
+              <span style={{ fontSize: "14px", fontWeight: 600 }}>Revealing on 15th March</span>
+            </div>
+          </div>
+        )}
+
         <div style={{ position: "absolute", top: 0, right: 0, width: "200px", height: "200px", background: program.accentGlow, borderRadius: "0 24px 0 100%", opacity: 0.4, pointerEvents: "none" }} />
 
         <div style={{ padding: "28px 32px 0", position: "relative" }}>

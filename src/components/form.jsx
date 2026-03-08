@@ -84,7 +84,6 @@ export default function LeadForm() {
               >
                 <option value="">Select a program</option>
                 <option value="Personality Development Masterclass">Personality Development Masterclass</option>
-                <option value="Speak with Impact Bootcamp">Speak with Impact Bootcamp</option>
                 <option value="Hire Mridu as an Anchor">Hire Mridu as an Anchor</option>
               </select>
             </div>
