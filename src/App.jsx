@@ -483,7 +483,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.6 }}
-                className="absolute top-1 right-1 lg:right-0 z-20"
+                className="hidden md:block absolute top-1 right-1 lg:right-0 z-20"
               >
                 <div className="bg-white rounded-2xl shadow-xl p-4 border border-slate-200">
                   <div className="flex items-center gap-2">
@@ -503,7 +503,7 @@ export default function App() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7, duration: 0.6 }}
-                className="absolute top-32 left-0 lg:-left-8 z-20"
+                className="hidden md:block absolute top-32 left-0 lg:-left-8 z-20"
               >
                 <div className="bg-white rounded-2xl shadow-xl p-4 border border-slate-200">
                   <div className="flex items-center gap-3">
@@ -523,9 +523,9 @@ export default function App() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.9, duration: 0.6 }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
+                className="absolute -bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 w-[90%] sm:w-auto"
               >
-                <div className="bg-white rounded-2xl shadow-xl px-6 py-3 border border-slate-200">
+                <div className="bg-white rounded-2xl shadow-xl px-4 py-3 md:px-6 md:py-3 border border-slate-200">
                   <p className="text-center">
                     <span className="text-sm text-slate-600">with</span> <span className="font-bold text-slate-900 text-lg">Mridu Bhandari</span>
                   </p>
@@ -537,7 +537,7 @@ export default function App() {
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-20 left-8 z-10"
+                className="hidden md:block absolute top-20 left-8 z-10"
               >
                 <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg rotate-12">
                   <Mic className="w-8 h-8 text-white" />
@@ -548,7 +548,7 @@ export default function App() {
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute bottom-24 right-8 z-10"
+                className="hidden md:block absolute bottom-24 right-8 z-10"
               >
                 <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg -rotate-12">
                   <Target className="w-7 h-7 text-white" />
