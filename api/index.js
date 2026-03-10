@@ -74,6 +74,19 @@ app.post('/api/send-email', async (req, res) => {
       transporter.sendMail(adminMailOptions)
     ]);
 
+    // 3. Optional: Send to Google Sheets if Webhook URL exists
+    if (process.env.GOOGLE_SHEET_WEBHOOK_URL) {
+      try {
+        await fetch(process.env.GOOGLE_SHEET_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, profession, location, program_interest, message }),
+        });
+      } catch (err) {
+        console.error('Error logging to Google Sheets:', err);
+      }
+    }
+
     res.status(200).json({ success: true, message: 'Emails sent successfully' });
   } catch (error) {
     console.error('Error sending email via Nodemailer:', error);
