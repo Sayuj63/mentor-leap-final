@@ -4,10 +4,59 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 
 export default function LeadForm() {
-  const receivingEmail = "mentorleap.india@gmail.com";
-  const ccEmail = import.meta.env.VITE_FORMSUBMIT_CC || "";
   const [selectedProgram, setSelectedProgram] = useState("");
   const isBootcamp = selectedProgram === "Speak with Impact Bootcamp";
+
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    // Add the program manually since it's controlled
+    data.program_interest = selectedProgram;
+
+    try {
+      // In production, the server is the same as the frontend, so we use a relative path
+      const apiUrl = import.meta.env.PROD
+        ? ''
+        : (import.meta.env.VITE_API_URL || 'http://localhost:3001');
+
+      const response = await fetch(`${apiUrl}/api/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage("Application submitted successfully! We will get back to you soon.");
+        e.target.reset();
+        setSelectedProgram("");
+
+        if (isBootcamp) {
+          window.location.href = "https://rzp.io/l/xyXPRm3";
+        }
+      } else {
+        setErrorMessage(result.error || "Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Network error. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section id="lead-form" className="py-20 px-6 bg-slate-50">
@@ -23,15 +72,20 @@ export default function LeadForm() {
         </div>
 
         <form
-          action={`https://formsubmit.co/${receivingEmail}`}
-          method="POST"
+          onSubmit={handleSubmit}
           className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm space-y-5"
         >
-          <input type="hidden" name="_subject" value="New Website Lead" />
-          <input type="hidden" name="_template" value="table" />
-          <input type="text" name="_honey" className="hidden" tabIndex={-1} autoComplete="off" />
-          {ccEmail ? <input type="hidden" name="_cc" value={ccEmail} /> : null}
-          {isBootcamp && <input type="hidden" name="_next" value="https://rzp.io/l/xyXPRm3" />}
+          {successMessage && (
+            <div className="p-4 bg-green-50 text-green-700 rounded-md border border-green-200">
+              {successMessage}
+            </div>
+          )}
+
+          {errorMessage && (
+            <div className="p-4 bg-red-50 text-red-700 rounded-md border border-red-200">
+              {errorMessage}
+            </div>
+          )}
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -94,12 +148,12 @@ export default function LeadForm() {
             <Textarea id="message" name="message" placeholder="Tell us your goal or query..." className="min-h-28" />
           </div>
 
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white h-11 text-base">
-            {isBootcamp ? "Proceed to Payment" : "Submit"}
+          <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white h-11 text-base">
+            {loading ? "Submitting..." : (isBootcamp ? "Proceed to Payment" : "Submit")}
           </Button>
 
           <p className="text-xs text-slate-500">
-            First submission requires inbox verification by FormSubmit. Check the receiving email and activate the form once.
+            By submitting this form, you agree to receive communications from MentorLeap.
           </p>
         </form>
       </div>
