@@ -75,16 +75,23 @@ app.post('/api/send-email', async (req, res) => {
     ]);
 
     // 3. Optional: Send to Google Sheets if Webhook URL exists
+    console.log('Checking for Google Sheet Webhook URL...');
     if (process.env.GOOGLE_SHEET_WEBHOOK_URL) {
+      console.log('Webhook URL found, sending data...');
       try {
-        await fetch(process.env.GOOGLE_SHEET_WEBHOOK_URL, {
+        const sheetResponse = await fetch(process.env.GOOGLE_SHEET_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, phone, profession, location, program_interest, message }),
         });
+        const sheetResult = await sheetResponse.text();
+        console.log('Google Sheets Response Status:', sheetResponse.status);
+        console.log('Google Sheets Response Body:', sheetResult);
       } catch (err) {
         console.error('Error logging to Google Sheets:', err);
       }
+    } else {
+      console.warn('GOOGLE_SHEET_WEBHOOK_URL not found in environment variables.');
     }
 
     res.status(200).json({ success: true, message: 'Emails sent successfully' });
