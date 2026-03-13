@@ -1318,6 +1318,13 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Copyright Attribution */}
+      <div className="bg-slate-950 py-6 px-6 text-center border-t border-slate-800/50">
+        <p className="text-slate-500 text-xs tracking-widest uppercase">
+          Powered by <a href="https://www.marktaleworld.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 font-medium transition-colors duration-300">Marktale</a>
+        </p>
+      </div>
+
       {/* Floating WhatsApp MISHA Button */}
       <a
         href="https://wa.me/919892322427"
