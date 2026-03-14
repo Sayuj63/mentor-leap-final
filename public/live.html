@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join the Live Masterclass – MentorLeap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --emerald: #059669;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --red: #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-900);
+      min-height: 100vh;
+    }
+
+    /* ─── NAV ─── */
+    .nav {
+      background: #fff;
+      border-bottom: 1px solid var(--slate-200);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 12px rgba(0,0,0,0.06);
+    }
+    .nav-brand { 
+      display: flex; 
+      align-items: center; 
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--slate-900);
+    }
+    .nav-brand .dot { color: var(--blue); }
+
+    /* ─── LIVE BADGE ─── */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fee2e2;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      border: 1px solid #fca5a5;
+      animation: pulse-badge 2s infinite;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0.2 } }
+    @keyframes pulse-badge { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3) } 50% { box-shadow: 0 0 0 6px rgba(239,68,68,0) } }
+
+    /* ─── PAGES ─── */
+    #page-form, #page-stream { display: none; }
+    #page-form.active, #page-stream.active { display: block; }
+
+    /* ─── FORM PAGE ─── */
+    .form-page {
+      min-height: calc(100vh - 61px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 50%, #ecfdf5 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .form-page::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .form-page::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(5,150,105,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .form-card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.1);
+      padding: 48px;
+      width: 100%;
+      max-width: 560px;
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--slate-200);
+    }
+
+    .form-header { text-align: center; margin-bottom: 36px; }
+    .form-header .event-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--blue);
+      margin-bottom: 10px;
+    }
+    .form-header h1 {
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 800;
+      color: var(--slate-900);
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+    .form-header p { font-size: 15px; color: var(--slate-500); line-height: 1.6; }
+
+    .event-details {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 20px 0 28px;
+    }
+    .event-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--slate-700);
+    }
+
+    /* Form fields */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: var(--slate-700); }
+
+    .input, .select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--slate-200);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: var(--slate-900);
+      background: var(--slate-50);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      appearance: none;
+    }
+    .input::placeholder { color: #94a3b8; }
+    .input:focus, .select:focus {
+      border-color: var(--blue);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+    /* Phone with country code */
+    .phone-row { display: flex; gap: 8px; }
+    .phone-code { flex: 0 0 130px; }
+    .phone-input { flex: 1; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--blue) 0%, #4f46e5 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+      letter-spacing: 0.01em;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,99,235,0.45); filter: brightness(1.05); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit svg { width: 18px; height: 18px; }
+
+    .form-note { text-align: center; font-size: 12px; color: var(--slate-500); margin-top: 14px; }
+
+    /* ─── STREAM PAGE ─── */
+    .stream-page {
+      min-height: calc(100vh - 61px);
+      background: #0a0f1a;
+      color: #fff;
+      padding: 24px 20px 40px;
+    }
+
+    .stream-top {
+      max-width: 1200px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .stream-title h2 {
+      font-size: clamp(18px, 2.5vw, 24px);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .stream-title p { font-size: 14px; color: #94a3b8; }
+
+    .stream-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .video-wrapper {
+      position: relative;
+      padding-top: 56.25%; /* 16:9 */
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .stream-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .sidebar-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .welcome-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: #60a5fa;
+      margin-bottom: 4px;
+    }
+    .welcome-text { font-size: 14px; color: #94a3b8; line-height: 1.5; }
+
+    .agenda-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .agenda-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+    .agenda-icon {
+      width: 22px; height: 22px;
+      background: rgba(37,99,235,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+
+    .share-btn {
+      width: 100%;
+      padding: 12px;
+      background: rgba(5,150,105,0.2);
+      border: 1px solid rgba(5,150,105,0.4);
+      border-radius: 10px;
+      color: #6ee7b7;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .share-btn:hover { background: rgba(5,150,105,0.3); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .form-card { padding: 32px 24px; }
+      .form-row { grid-template-columns: 1fr; }
+      .stream-container { grid-template-columns: 1fr; }
+      .stream-sidebar { order: -1; }
+      .sidebar-card:last-child { display: none; }
+    }
+
+    /* ─── ANIMATIONS ─── */
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+
+    /* Error state */
+    .input.error, .select.error { border-color: var(--red); }
+    .error-msg { font-size: 12px; color: var(--red); margin-top: 3px; display: none; }
+    .error-msg.show { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    Mentor<span class="dot">Leap</span>
+    &nbsp;
+    <div class="live-badge"><span class="live-dot"></span> Live Now</div>
+  </div>
+</nav>
+
+<!-- ─── PAGE 1: REGISTRATION FORM ─── -->
+<div id="page-form" class="active">
+  <div class="form-page">
+    <div class="form-card fade-in">
+      <div class="form-header">
+        <span class="event-label">🔴 Live Session — 15th March 2026</span>
+        <h1>Join the FREE Personality Development Masterclass</h1>
+        <p>Enter your details to unlock the live stream with Mridu Bhandari.</p>
+
+        <div class="event-details">
+          <div class="event-chip">📅 15 March 2026</div>
+          <div class="event-chip">⏰ 7:30 PM – 8:30 PM IST</div>
+          <div class="event-chip">🌐 Live Online</div>
+        </div>
+      </div>
+
+      <form id="reg-form" novalidate>
+        <!-- Name -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-name">First Name *</label>
+            <input class="input" id="f-name" type="text" placeholder="First name" required />
+            <span class="error-msg" id="err-fname">Please enter your first name.</span>
+          </div>
+          <div class="form-group">
+            <label for="l-name">Last Name *</label>
+            <input class="input" id="l-name" type="text" placeholder="Last name" required />
+            <span class="error-msg" id="err-lname">Please enter your last name.</span>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="f-email">Email Address *</label>
+          <input class="input" id="f-email" type="email" placeholder="you@example.com" required />
+          <span class="error-msg" id="err-email">Please enter a valid email.</span>
+        </div>
+
+        <!-- Phone -->
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <div class="phone-row">
+            <select class="select phone-code" id="f-code">
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+61">🇦🇺 +61</option>
+              <option value="+971">🇦🇪 +971</option>
+              <option value="+65">🇸🇬 +65</option>
+              <option value="+60">🇲🇾 +60</option>
+              <option value="+880">🇧🇩 +880</option>
+              <option value="+94">🇱🇰 +94</option>
+              <option value="+977">🇳🇵 +977</option>
+              <option value="+92">🇵🇰 +92</option>
+              <option value="+49">🇩🇪 +49</option>
+              <option value="+33">🇫🇷 +33</option>
+              <option value="+81">🇯🇵 +81</option>
+              <option value="+86">🇨🇳 +86</option>
+              <option value="+7">🇷🇺 +7</option>
+              <option value="+55">🇧🇷 +55</option>
+              <option value="+27">🇿🇦 +27</option>
+              <option value="+234">🇳🇬 +234</option>
+              <option value="+254">🇰🇪 +254</option>
+            </select>
+            <input class="input phone-input" id="f-phone" type="tel" placeholder="9876543210" inputmode="numeric" required />
+          </div>
+          <span class="error-msg" id="err-phone">Please enter a valid phone number.</span>
+        </div>
+
+        <!-- Country & City -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-country">Country *</label>
+            <select class="select" id="f-country" required>
+              <option value="">Select country</option>
+              <option value="India">India</option>
+              <option value="United States">United States</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Australia">Australia</option>
+              <option value="UAE">UAE</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Malaysia">Malaysia</option>
+              <option value="Bangladesh">Bangladesh</option>
+              <option value="Sri Lanka">Sri Lanka</option>
+              <option value="Nepal">Nepal</option>
+              <option value="Pakistan">Pakistan</option>
+              <option value="Germany">Germany</option>
+              <option value="France">France</option>
+              <option value="Canada">Canada</option>
+              <option value="Japan">Japan</option>
+              <option value="China">China</option>
+              <option value="Brazil">Brazil</option>
+              <option value="South Africa">South Africa</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="error-msg" id="err-country">Please select your country.</span>
+          </div>
+          <div class="form-group">
+            <label for="f-city">City *</label>
+            <input class="input" id="f-city" type="text" placeholder="Your city" required />
+            <span class="error-msg" id="err-city">Please enter your city.</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Watch Live Now — It's FREE
+        </button>
+        <p class="form-note">🔒 We respect your privacy. No spam, ever.</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PAGE 2: LIVE STREAM ─── -->
+<div id="page-stream">
+  <div class="stream-page">
+
+    <div class="stream-top">
+      <div class="stream-title">
+        <h2>FREE Personality Development Masterclass</h2>
+        <p id="stream-subtitle">with Mridu Bhandari · 15 March 2026 · 7:30 PM IST</p>
+      </div>
+      <div class="live-badge"><span class="live-dot"></span> Live on YouTube</div>
+    </div>
+
+    <div class="stream-container">
+      <!-- Video -->
+      <div class="video-wrapper">
+        <iframe
+          id="yt-iframe"
+          src="https://www.youtube.com/embed/I6XgYzorrSY?autoplay=1&rel=0&modestbranding=1"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          title="MentorLeap Live Masterclass"
+        ></iframe>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="stream-sidebar">
+
+        <!-- Welcome Card -->
+        <div class="sidebar-card">
+          <h3>👋 Welcome</h3>
+          <div class="welcome-name" id="welcome-name">Learner</div>
+          <div class="welcome-text">You're in! Sit back and enjoy the live session. Feel free to comment on YouTube to ask questions.</div>
+        </div>
+
+        <!-- Agenda -->
+        <div class="sidebar-card">
+          <h3>📋 Today's Agenda</h3>
+          <ul class="agenda-list">
+            <li><div class="agenda-icon">1</div>Communication Blueprint Framework</li>
+            <li><div class="agenda-icon">2</div>Mindset Reset Methodology</li>
+            <li><div class="agenda-icon">3</div>Executive Presence Techniques</li>
+            <li><div class="agenda-icon">4</div>Live Q&amp;A with Mridu</li>
+          </ul>
+        </div>
+
+        <!-- Share -->
+        <div class="sidebar-card">
+          <h3>💬 Spread the Word</h3>
+          <button class="share-btn" onclick="shareSession()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share with a Friend
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const YOUTUBE_LINK = 'https://www.youtube.com/live/I6XgYzorrSY';
+
+  // Validate helpers
+  const $ = id => document.getElementById(id);
+  function showError(id, show) {
+    $('err-' + id).classList.toggle('show', show);
+    const el = $(id.replace('err-','f-')) || $('f-' + id);
+    if (el) el.classList.toggle('error', show);
+  }
+
+  // Clear errors on input
+  ['f-name','l-name','f-email','f-phone','f-country','f-city'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', () => el.classList.remove('error'));
+  });
+
+  $('reg-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const fname  = $('f-name').value.trim();
+    const lname  = $('l-name').value.trim();
+    const email  = $('f-email').value.trim();
+    const phone  = $('f-phone').value.trim();
+    const country= $('f-country').value;
+    const city   = $('f-city').value.trim();
+
+    let valid = true;
+
+    if (!fname)  { showError('fname', true); valid = false; } else showError('fname', false);
+    if (!lname)  { showError('lname', true); valid = false; } else showError('lname', false);
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('email', true); valid = false; } else showError('email', false);
+    if (!phone || !/^\d{6,15}$/.test(phone)) { showError('phone', true); valid = false; } else showError('phone', false);
+    if (!country){ showError('country', true); valid = false; } else showError('country', false);
+    if (!city)   { showError('city', true); valid = false; } else showError('city', false);
+
+    if (!valid) return;
+
+    // Show loading
+    const btn = $('submit-btn');
+    btn.textContent = 'Joining...';
+    btn.disabled = true;
+    btn.style.opacity = '0.8';
+    btn.style.cursor = 'default';
+
+    // Simulate a tiny delay for UX, then switch pages
+    setTimeout(() => {
+      // Set welcome name
+      $('welcome-name').textContent = fname + ' ' + lname;
+
+      // Switch pages
+      $('page-form').classList.remove('active');
+      $('page-stream').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 600);
+  });
+
+  function shareSession() {
+    const text = '🚀 I just joined a FREE Live Personality Development Masterclass by Mridu Bhandari. Join me here:';
+    if (navigator.share) {
+      navigator.share({ title: 'MentorLeap Live Masterclass', text, url: YOUTUBE_LINK });
+    } else {
+      navigator.clipboard.writeText(YOUTUBE_LINK).then(() => alert('Link copied! Share it with your friends 🎉'));
+    }
+  }
+</script>
+
+</body>
+</html>
