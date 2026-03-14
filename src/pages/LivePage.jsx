@@ -109,15 +109,15 @@ function RegistrationForm({ onSuccess }) {
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">Phone Number *</label>
             <div className="flex gap-2">
               <select value={form.countryCode} onChange={set("countryCode")}
-                className={`${inputBase} ${normalBorder} flex-shrink-0 w-[130px] cursor-pointer`}
-                style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center", appearance: "none", paddingRight: "28px" }}>
+                className={`${inputBase} ${normalBorder} cursor-pointer`}
+                style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center", appearance: "none", paddingRight: "28px", flexBasis: "100px", flexShrink: 0, flexGrow: 0, minWidth: 0 }}>
                 {COUNTRY_CODES.map((c) => (
                   <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
                 ))}
               </select>
               <input value={form.phone} onChange={set("phone")} type="tel" inputMode="numeric"
                 placeholder="9876543210"
-                className={`${inputBase} ${errors.phone ? errorBorder : normalBorder} flex-1`} />
+                className={`${inputBase} ${errors.phone ? errorBorder : normalBorder} min-w-0 flex-1`} />
             </div>
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             <p className="text-xs text-slate-400 mt-1">
