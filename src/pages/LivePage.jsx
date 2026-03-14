@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const COUNTRY_CODES = [
@@ -149,6 +149,106 @@ function RegistrationForm({ onSuccess }) {
   );
 }
 
+function LiveChat({ userName }) {
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const chatEndRef = useRef(null);
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    const parts = name.split(" ");
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name[0].toUpperCase();
+  };
+
+  const handleSend = () => {
+    if (!inputValue.trim()) return;
+    
+    const newMessage = {
+      id: Date.now(),
+      sender: userName || "User",
+      initials: getInitials(userName),
+      text: inputValue.trim(),
+      time: "just now",
+      isSelf: true
+    };
+    
+    setMessages([...messages, newMessage]);
+    setInputValue("");
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSend();
+    }
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl flex flex-col h-[400px]">
+      {/* Chat header */}
+      <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5 rounded-t-2xl">
+        <h3 className="font-bold text-slate-100 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Chat
+        </h3>
+        <span className="text-xs text-slate-400">1,204 watching</span>
+      </div>
+      
+      {/* Chat messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="h-full flex items-center justify-center">
+            <p className="text-sm text-slate-500 text-center">No messages yet.<br/>Be the first to say hi!</p>
+          </div>
+        ) : (
+          messages.map((msg) => (
+            <div key={msg.id} className="flex gap-3 animate-fade-in">
+              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 font-bold text-white text-xs">
+                {msg.initials}
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-semibold mb-0.5">
+                  {msg.sender} <span className="font-normal text-slate-500 ml-1">{msg.time}</span>
+                </p>
+                <p className="text-sm text-slate-200">{msg.text}</p>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={chatEndRef} />
+      </div>
+      
+      {/* Chat Input */}
+      <div className="p-3 border-t border-white/10 bg-black/20 rounded-b-2xl">
+         <div className="flex gap-2">
+           <input 
+             type="text" 
+             value={inputValue}
+             onChange={(e) => setInputValue(e.target.value)}
+             onKeyDown={handleKeyDown}
+             placeholder={`Chat publicly as ${userName || "User"}...`} 
+             className="w-full bg-white/10 border border-white/20 text-white placeholder-slate-400 text-sm rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-colors"
+           />
+           <button 
+             onClick={handleSend}
+             className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-5 font-bold flex items-center justify-center transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+           >
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+               <line x1="22" y1="2" x2="11" y2="13"></line>
+               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+             </svg>
+           </button>
+         </div>
+      </div>
+    </div>
+  );
+}
+
 function LiveStream({ name, country }) {
   const navigate = useNavigate();
 
@@ -177,15 +277,21 @@ function LiveStream({ name, country }) {
 
       {/* Grid */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5 items-start">
-        {/* Video */}
-        <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
-          <iframe
-            src="https://www.youtube.com/embed/I6XgYzorrSY?autoplay=1&rel=0&modestbranding=1"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            title="MentorLeap Live Masterclass"
-            className="absolute inset-0 w-full h-full border-0"
-          />
+        {/* Left Column: Video + Chat */}
+        <div className="flex flex-col gap-5 w-full">
+          {/* Video */}
+          <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
+            <iframe
+              src="https://www.youtube.com/embed/I6XgYzorrSY?autoplay=1&rel=0&modestbranding=1"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              title="MentorLeap Live Masterclass"
+              className="absolute inset-0 w-full h-full border-0"
+            />
+          </div>
+
+          {/* Chat Box */}
+          <LiveChat userName={name} />
         </div>
 
         {/* Sidebar */}

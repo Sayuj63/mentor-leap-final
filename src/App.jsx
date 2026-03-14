@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "./components/ui/button";
 import { Card, CardContent } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
-import { Calendar, Users, Briefcase, TrendingUp, Target, Zap, CheckCircle2, ArrowRight, BookOpen, Mic, Star, Award, PlayCircle, Video } from "lucide-react";
+import { Calendar, Users, Briefcase, TrendingUp, Target, Zap, CheckCircle2, ArrowRight, BookOpen, Mic, Star, Award, PlayCircle, Video, X } from "lucide-react";
 import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import PopUp from "./components/PopUp";
 import LeadForm from "./components/form";
@@ -488,9 +488,61 @@ function MasterclassAnnouncementBar() {
   );
 }
 
+function LivePopup() {
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed bottom-24 right-6 z-[100] flex flex-col items-end gap-3 pointer-events-none">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white rounded-2xl p-4 shadow-2xl border border-red-100 flex flex-col gap-2 max-w-[300px] pointer-events-auto"
+      >
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+            <span className="font-bold text-slate-800 text-sm">MentorLeap is LIVE!</span>
+          </div>
+          <button 
+            onClick={() => setIsVisible(false)}
+            className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full p-1 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <p className="text-xs text-slate-600 font-medium leading-relaxed">
+          The masterclass is currently running. Don't miss out, join the session right away!
+        </p>
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="pointer-events-auto w-full flex justify-end"
+      >
+        <a 
+          href="/live"
+          className="rounded-full shadow-lg shadow-red-500/30 bg-red-500 hover:bg-red-600 text-white font-bold px-8 h-12 transition-all hover:scale-105 flex items-center gap-2 text-base"
+        >
+          <Video className="w-5 h-5" />
+          Join Live
+        </a>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <div className="min-h-screen bg-white">
+      {/* <LivePopup /> Hidden for now */}
       <PopUp />
 
       <div className="sticky top-0 z-[60] flex flex-col w-full shadow-sm">
