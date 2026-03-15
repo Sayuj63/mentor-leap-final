@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Change this line at the top of LivePage.jsx:
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTR6ZkqamEl_8z7e7Jeb31TRxo8nCUBxPr_X-c5CV95LWvZaks3-KXEdrtSOR1OQ91Pg/exec";
+
 const COUNTRY_CODES = [
   { code: "+91", flag: "🇮🇳", label: "India", name: "India" },
   { code: "+1", flag: "🇺🇸", label: "US/Canada", name: "United States" },
@@ -26,7 +29,7 @@ const COUNTRY_CODES = [
 
 function PollInteractive() {
   const [activePoll, setActivePoll] = useState(null);
-  const [voted, setVoted] = useState(null); // stores { pollId, choice } or { pollId, text }
+  const [voted, setVoted] = useState(null);
   const [fillData, setFillData] = useState({ p1: "", p2: "", p3: "" });
   const [loading, setLoading] = useState(false);
 
@@ -72,7 +75,6 @@ function PollInteractive() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pollId: activePoll.id, text })
       });
-      // Also send to chat
       await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,7 +131,7 @@ function PollInteractive() {
                         <span className="text-xs font-bold text-blue-400">{pct}%</span>
                       </div>
                       <div className="h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-                        <div 
+                        <div
                           className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(37,99,235,0.4)]"
                           style={{ width: `${pct}%` }}
                         />
@@ -147,26 +149,26 @@ function PollInteractive() {
               <form onSubmit={handleFillSubmit} className="space-y-4">
                 <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 space-y-3">
                   <p className="text-sm text-slate-400 font-medium">I help...</p>
-                  <input 
+                  <input
                     placeholder="e.g. Students"
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 transition-colors"
-                    value={fillData.p1} onChange={e => setFillData({...fillData, p1: e.target.value})}
+                    value={fillData.p1} onChange={e => setFillData({ ...fillData, p1: e.target.value })}
                   />
                   <p className="text-sm text-slate-400 font-medium">achieve...</p>
-                  <input 
+                  <input
                     placeholder="e.g. Confidence"
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 transition-colors"
-                    value={fillData.p2} onChange={e => setFillData({...fillData, p2: e.target.value})}
+                    value={fillData.p2} onChange={e => setFillData({ ...fillData, p2: e.target.value })}
                   />
                   <p className="text-sm text-slate-400 font-medium">by doing...</p>
-                  <input 
+                  <input
                     placeholder="e.g. Masterclasses"
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 transition-colors"
-                    value={fillData.p3} onChange={e => setFillData({...fillData, p3: e.target.value})}
+                    value={fillData.p3} onChange={e => setFillData({ ...fillData, p3: e.target.value })}
                   />
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={loading || !fillData.p1 || !fillData.p2 || !fillData.p3}
                   className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:hover:bg-orange-500 text-white font-black rounded-xl transition-all shadow-lg active:scale-95 text-sm uppercase tracking-wider"
                 >
@@ -209,16 +211,34 @@ function RegistrationForm({ onSuccess }) {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     setLoading(true);
+
     const country = COUNTRY_CODES.find((c) => c.code === form.countryCode)?.name || "Unknown";
-    const userData = { 
-      name: `${form.fname} ${form.lname}`, 
+    const userData = {
+      name: `${form.fname} ${form.lname}`,
       email: form.email,
       phone: `${form.countryCode} ${form.phone}`,
-      country 
+      country
     };
 
+    // ✅ FIX: Post directly to Google Apps Script to write lead into Google Sheets
     try {
-      await fetch('/api/join-live', { 
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // Required — Apps Script doesn't return CORS headers
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...userData,
+          timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+          source: "Live Registration"
+        })
+      });
+    } catch (err) {
+      console.error("Failed to write lead to Google Sheets:", err);
+    }
+
+    // Your existing backend call (for live viewer count etc.)
+    try {
+      await fetch('/api/join-live', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -226,9 +246,9 @@ function RegistrationForm({ onSuccess }) {
     } catch (err) {
       console.error("Failed to update live viewers:", err);
     }
-    
+
     localStorage.setItem("mentorleap_v2_user", JSON.stringify({ name: userData.name, country: userData.country }));
-    
+
     setTimeout(() => {
       onSuccess(userData);
     }, 600);
@@ -339,7 +359,6 @@ function LiveChat({ userName }) {
   const chatContainerRef = useRef(null);
   const shouldAutoScroll = useRef(true);
 
-  // Track if user has scrolled up
   const handleScroll = () => {
     const el = chatContainerRef.current;
     if (!el) return;
@@ -391,10 +410,8 @@ function LiveChat({ userName }) {
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
-    
     const text = inputValue.trim();
     setInputValue("");
-    
     try {
       await fetch('/api/chat', {
         method: 'POST',
@@ -434,9 +451,9 @@ function LiveChat({ userName }) {
         </h3>
         <span className="text-xs text-slate-400 font-mono">{views.toLocaleString()} watching</span>
       </div>
-      
+
       {/* Chat messages */}
-      <div 
+      <div
         ref={chatContainerRef}
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-3 space-y-2.5"
@@ -444,12 +461,12 @@ function LiveChat({ userName }) {
       >
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <p className="text-sm text-slate-500 text-center">No messages yet.<br/>Be the first to say hi!</p>
+            <p className="text-sm text-slate-500 text-center">No messages yet.<br />Be the first to say hi!</p>
           </div>
         ) : (
           messages.map((msg) => (
             <div key={msg.id} className="flex gap-2.5 animate-fade-in group">
-              <div 
+              <div
                 className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-[10px]"
                 style={{ backgroundColor: msg.color || "#3b82f6" }}
               >
@@ -467,28 +484,28 @@ function LiveChat({ userName }) {
         )}
         <div ref={chatEndRef} />
       </div>
-      
+
       {/* Chat Input */}
       <div className="p-3 border-t border-white/10 bg-black/20 rounded-b-2xl">
-         <div className="flex gap-2">
-           <input 
-             type="text" 
-             value={inputValue}
-             onChange={(e) => setInputValue(e.target.value)}
-             onKeyDown={handleKeyDown}
-             placeholder={`Chat as ${userName || "User"}...`} 
-             className="w-full bg-white/10 border border-white/20 text-white placeholder-slate-400 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-colors"
-           />
-           <button 
-             onClick={handleSend}
-             className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-4 font-bold flex items-center justify-center transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-           >
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-               <line x1="22" y1="2" x2="11" y2="13"></line>
-               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-             </svg>
-           </button>
-         </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={`Chat as ${userName || "User"}...`}
+            className="w-full bg-white/10 border border-white/20 text-white placeholder-slate-400 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-colors"
+          />
+          <button
+            onClick={handleSend}
+            className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-4 font-bold flex items-center justify-center transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -597,7 +614,6 @@ export default function LivePage() {
     const saved = localStorage.getItem("mentorleap_v2_user");
     if (saved) {
       try {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setViewer(JSON.parse(saved));
       } catch {
         localStorage.removeItem("mentorleap_v2_user");
