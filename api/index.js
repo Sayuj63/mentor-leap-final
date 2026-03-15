@@ -457,23 +457,8 @@ function stopAutoViewerGrowth() {
 // LIVE API ROUTES (Public)
 // ═══════════════════════════════════════════════════════════════
 
-app.post('/api/join-live', async (req, res) => {
-  const { name, email, phone, country } = req.body;
+app.post('/api/join-live', (req, res) => {
   currentViews += 1;
-
-  // Send lead to Google Sheet if Webhook is available
-  const webhookUrl = process.env.GOOGLE_SHEET_LIVE_WEBHOOK_URL;
-  if (webhookUrl) {
-    fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone, country, source: "Live Masterclass Registration", timestamp: new Date().toISOString() }),
-    })
-    .then(r => r.text())
-    .then(body => console.log('Live Sheets OK:', body))
-    .catch(err => console.error('Live Sheets error (non-blocking):', err));
-  }
-
   res.status(200).json({ success: true, views: currentViews });
 });
 

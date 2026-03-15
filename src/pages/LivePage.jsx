@@ -224,10 +224,11 @@ function RegistrationForm({ onSuccess }) {
     try {
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors", // Required — Apps Script doesn't return CORS headers
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...userData,
+          phone: "'" + userData.phone, // ✅ prevents #ERROR! in Google Sheets
           timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
           source: "Live Registration"
         })
@@ -236,12 +237,12 @@ function RegistrationForm({ onSuccess }) {
       console.error("Failed to write lead to Google Sheets:", err);
     }
 
-    // Your existing backend call (for live viewer count etc.)
+    // ✅ FIX: Only call /api/join-live for viewer count — NO sheet writing here
     try {
       await fetch('/api/join-live', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
+        body: JSON.stringify({ name: userData.name, country: userData.country }) // only what's needed for viewer count
       });
     } catch (err) {
       console.error("Failed to update live viewers:", err);
@@ -614,6 +615,7 @@ export default function LivePage() {
     const saved = localStorage.getItem("mentorleap_v2_user");
     if (saved) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setViewer(JSON.parse(saved));
       } catch {
         localStorage.removeItem("mentorleap_v2_user");
