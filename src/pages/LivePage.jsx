@@ -417,7 +417,7 @@ function LiveChat({ userName }) {
           setMessages(prev => {
             const serverMsgs = data.messages;
             const newMsgs = [...prev];
-            
+
             serverMsgs.forEach(sMsg => {
               if (!newMsgs.find(m => m.id === sMsg.id)) {
                 newMsgs.push(sMsg);
@@ -425,7 +425,7 @@ function LiveChat({ userName }) {
             });
 
             // Keep only latest 100 to avoid bloat
-            return newMsgs.sort((a,b) => a.id - b.id).slice(-100);
+            return newMsgs.sort((a, b) => a.id - b.id).slice(-100);
           });
         }
       } catch (err) {
@@ -465,7 +465,7 @@ function LiveChat({ userName }) {
     if (!inputValue.trim()) return;
     const text = inputValue.trim();
     const initials = getInitials(userName);
-    
+
     // ✅ Optimistic Update
     const tempId = Date.now();
     const optimisticMsg = {
@@ -619,7 +619,7 @@ function LiveStream({ name, country }) {
           {/* Video */}
           <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
             <iframe
-              src="https://www.youtube.com/embed/I6XgYzorrSY?autoplay=1&rel=0&modestbranding=1"
+              src="https://www.youtube.com/embed/cXaj4cDnNwI"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               title="MentorLeap Live Masterclass"
