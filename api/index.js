@@ -424,11 +424,30 @@ function startSimulation() {
     let mood = getWeightedMood();
     
     // If a poll is active, 30% chance to switch to poll_answers mood
-    if (activePoll && activePoll.type === 'poll' && Math.random() < 0.3) {
-      mood = "poll_answers";
+    sendBotMessage(mood);
+
+    // ✅ Gradual Poll Growth Simulation
+    if (activePoll && activePoll.type === 'poll') {
+      const pollId = activePoll.id;
+      if (!pollVotes[pollId]) pollVotes[pollId] = {};
+      
+      // Simulate multiple votes per tick for activity
+      const batchSize = Math.floor(Math.random() * 3) + 1;
+      for (let i = 0; i < batchSize; i++) {
+        const r = Math.random() * 100;
+        let acc = 0;
+        let pickedKey = activePoll.options[0].key;
+        for (const opt of activePoll.options) {
+          acc += (activePoll.mockResults[opt.key] || 0);
+          if (r <= acc) {
+            pickedKey = opt.key;
+            break;
+          }
+        }
+        pollVotes[pollId][pickedKey] = (pollVotes[pollId][pickedKey] || 0) + 1;
+      }
     }
 
-    sendBotMessage(mood);
     // random viewer fluctuations
     currentViews += Math.floor(Math.random() * 7) - 2; // -2 to +4
     if (currentViews < 100) currentViews = 100;
@@ -475,6 +494,21 @@ app.post('/api/chat', (req, res) => {
 });
 
 app.get('/api/poll', (req, res) => {
+  if (activePoll && activePoll.type === 'poll') {
+    const votes = pollVotes[activePoll.id] || {};
+    const total = Object.values(votes).reduce((a, b) => a + b, 0) || 1;
+    const dynamicResults = {};
+    activePoll.options.forEach(opt => {
+      dynamicResults[opt.key] = Math.round(((votes[opt.key] || 0) / total) * 100);
+    });
+    return res.status(200).json({ 
+      activePoll: { 
+        ...activePoll, 
+        currentResults: dynamicResults,
+        totalVotes: total 
+      } 
+    });
+  }
   res.status(200).json({ activePoll });
 });
 
@@ -639,7 +673,13 @@ app.post('/api/command/poll/activate', (req, res) => {
   if (pollId === 'close' || !pollId) {
     activePoll = null;
   } else {
-    activePoll = PREDEFINED_POLLS[pollId];
+    activePoll = JSON.parse(JSON.stringify(PREDEFINED_POLLS[pollId]));
+    // Reset votes for fresh growth
+    pollVotes[activePoll.id] = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+    // Start with a small seed
+    activePoll.options.forEach(opt => {
+      pollVotes[activePoll.id][opt.key] = Math.floor(Math.random() * 5);
+    });
   }
   res.status(200).json({ success: true, activePoll });
 });

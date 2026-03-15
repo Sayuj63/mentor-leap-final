@@ -147,7 +147,7 @@ function PollInteractive() {
             ) : (
               <div className="space-y-4 py-2">
                 {activePoll.options.map((opt) => {
-                  const pct = activePoll.mockResults[opt.key];
+                  const pct = activePoll.currentResults?.[opt.key] || 0;
                   return (
                     <div key={opt.key} className="relative">
                       <div className="flex justify-between items-center mb-1.5 px-1">
