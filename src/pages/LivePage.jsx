@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Change this line at the top of LivePage.jsx:
+// ✅ Google Apps Script URL
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTR6ZkqamEl_8z7e7Jeb31TRxo8nCUBxPr_X-c5CV95LWvZaks3-KXEdrtSOR1OQ91Pg/exec";
 
 const COUNTRY_CODES = [
@@ -26,6 +26,30 @@ const COUNTRY_CODES = [
   { code: "+234", flag: "🇳🇬", label: "Nigeria", name: "Nigeria" },
   { code: "+254", flag: "🇰🇪", label: "Kenya", name: "Kenya" },
 ];
+
+// ✅ Phone length rules per country code
+const PHONE_LENGTHS = {
+  "+91": { min: 10, max: 10 },
+  "+1": { min: 10, max: 10 },
+  "+44": { min: 10, max: 10 },
+  "+61": { min: 9, max: 9 },
+  "+971": { min: 9, max: 9 },
+  "+65": { min: 8, max: 8 },
+  "+60": { min: 9, max: 10 },
+  "+880": { min: 10, max: 10 },
+  "+94": { min: 9, max: 9 },
+  "+977": { min: 10, max: 10 },
+  "+92": { min: 10, max: 10 },
+  "+49": { min: 10, max: 11 },
+  "+33": { min: 9, max: 9 },
+  "+81": { min: 10, max: 10 },
+  "+86": { min: 11, max: 11 },
+  "+7": { min: 10, max: 10 },
+  "+55": { min: 10, max: 11 },
+  "+27": { min: 9, max: 9 },
+  "+234": { min: 10, max: 10 },
+  "+254": { min: 9, max: 9 },
+};
 
 function PollInteractive() {
   const [activePoll, setActivePoll] = useState(null);
@@ -196,12 +220,27 @@ function RegistrationForm({ onSuccess }) {
 
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }));
 
+  // ✅ ONLY CHANGE: smart per-country phone validation
   const validate = () => {
     const e = {};
     if (!form.fname.trim()) e.fname = "First name is required.";
     if (!form.lname.trim()) e.lname = "Last name is required.";
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Enter a valid email address.";
-    if (!form.phone.trim() || !/^\d{6,15}$/.test(form.phone.trim())) e.phone = "Enter a valid phone number.";
+
+    const phoneDigits = form.phone.trim();
+    const selectedCountry = COUNTRY_CODES.find((c) => c.code === form.countryCode);
+    const lengths = PHONE_LENGTHS[form.countryCode] || { min: 6, max: 15 };
+
+    if (!phoneDigits) {
+      e.phone = "Phone number is required.";
+    } else if (!/^\d+$/.test(phoneDigits)) {
+      e.phone = "Digits only — do not include the country code.";
+    } else if (phoneDigits.length < lengths.min || phoneDigits.length > lengths.max) {
+      e.phone = lengths.min === lengths.max
+        ? `Enter a valid ${lengths.min}-digit number for ${selectedCountry?.name || "this country"}.`
+        : `Enter a ${lengths.min}–${lengths.max} digit number for ${selectedCountry?.name || "this country"}.`;
+    }
+
     return e;
   };
 
@@ -220,7 +259,7 @@ function RegistrationForm({ onSuccess }) {
       country
     };
 
-    // ✅ FIX: Post directly to Google Apps Script to write lead into Google Sheets
+    // ✅ Post directly to Google Apps Script to write lead into Google Sheets
     try {
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
@@ -228,24 +267,13 @@ function RegistrationForm({ onSuccess }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...userData,
-          phone: "'" + userData.phone, // ✅ prevents #ERROR! in Google Sheets
+          phone: "'" + userData.phone,
           timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
           source: "Live Registration"
         })
       });
     } catch (err) {
       console.error("Failed to write lead to Google Sheets:", err);
-    }
-
-    // ✅ FIX: Only call /api/join-live for viewer count — NO sheet writing here
-    try {
-      await fetch('/api/join-live', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: userData.name, country: userData.country }) // only what's needed for viewer count
-      });
-    } catch (err) {
-      console.error("Failed to update live viewers:", err);
     }
 
     localStorage.setItem("mentorleap_v2_user", JSON.stringify({ name: userData.name, country: userData.country }));
