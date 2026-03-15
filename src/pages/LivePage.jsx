@@ -413,14 +413,27 @@ function LiveChat({ userName }) {
         if (res.ok) {
           const data = await res.json();
           setViews(data.views);
-          setMessages(data.messages);
+          // ✅ Deduplicate and merge: keep local optimistic messages until server returns them
+          setMessages(prev => {
+            const serverMsgs = data.messages;
+            const newMsgs = [...prev];
+            
+            serverMsgs.forEach(sMsg => {
+              if (!newMsgs.find(m => m.id === sMsg.id)) {
+                newMsgs.push(sMsg);
+              }
+            });
+
+            // Keep only latest 100 to avoid bloat
+            return newMsgs.sort((a,b) => a.id - b.id).slice(-100);
+          });
         }
       } catch (err) {
         console.error("Failed to fetch live data:", err);
       }
     };
     fetchLiveData();
-    const interval = setInterval(fetchLiveData, 2000);
+    const interval = setInterval(fetchLiveData, 1000); // Polling faster (1s) for smoother feel
     return () => clearInterval(interval);
   }, []);
 
@@ -451,19 +464,41 @@ function LiveChat({ userName }) {
   const handleSend = async () => {
     if (!inputValue.trim()) return;
     const text = inputValue.trim();
+    const initials = getInitials(userName);
+    
+    // ✅ Optimistic Update
+    const tempId = Date.now();
+    const optimisticMsg = {
+      id: tempId,
+      sender: userName || "You",
+      initials: initials,
+      text,
+      time: new Date().toISOString(),
+      color: "#3b82f6",
+      isOptimistic: true
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
     setInputValue("");
+
     try {
-      await fetch('/api/chat', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sender: userName || "User",
-          initials: getInitials(userName),
+          initials: initials,
           text
         })
       });
+      if (res.ok) {
+        const data = await res.json();
+        // Replace optimistic msg with real one from server
+        setMessages(prev => prev.map(m => m.id === tempId ? data.message : m));
+      }
     } catch (err) {
       console.error("Failed to send message:", err);
+      // Remove optimistic msg on failure
+      setMessages(prev => prev.filter(m => m.id !== tempId));
     }
   };
 

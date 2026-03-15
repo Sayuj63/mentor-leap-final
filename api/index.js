@@ -32,8 +32,9 @@ const ADMIN_PASSWORD = "mentorleap2026";
 
 // ── State ──
 let currentViews = 0;
+let messageIdCounter = 1000; // Start high for bots/simulation
 let chatMessages = [
-  { id: 1, sender: "MentorLeap", initials: "ML", text: "Welcome to the live session! Ask your questions here 🎉", time: new Date().toISOString(), color: "#3b82f6" }
+  { id: 999, sender: "MentorLeap", initials: "ML", text: "Welcome to the live session! Ask your questions here 🎉", time: new Date().toISOString(), color: "#3b82f6" }
 ];
 let simulationRunning = false;
 let simulationInterval = null;
@@ -369,7 +370,7 @@ function pickRandomBot() {
 
 function addChatMessage(sender, initials, text, color) {
   const msg = {
-    id: Date.now() + Math.random(),
+    id: ++messageIdCounter,
     sender,
     initials,
     text,
@@ -377,7 +378,7 @@ function addChatMessage(sender, initials, text, color) {
     color: color || "#3b82f6"
   };
   chatMessages.push(msg);
-  if (chatMessages.length > 200) chatMessages = chatMessages.slice(-200);
+  if (chatMessages.length > 500) chatMessages = chatMessages.slice(-500); // Increased buffer
   return msg;
 }
 
