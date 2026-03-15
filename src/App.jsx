@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./components/ui/button";
 import { Card, CardContent } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
@@ -396,7 +397,7 @@ function ProgramCard({ program }) {
             </motion.a>
           ) : (
             <motion.a
-              href="#lead-form"
+              href="/live"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               style={{ width: "100%", padding: "18px 24px", background: program.btnBg, color: program.btnColor, border: "none", borderRadius: "14px", fontSize: "16px", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "filter 0.2s", letterSpacing: "0.01em", textDecoration: "none" }}
@@ -482,7 +483,7 @@ function MasterclassAnnouncementBar() {
         </div>
 
         <Button asChild size="sm" className="h-8 bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg text-xs font-bold tracking-wide md:w-auto mt-0">
-          <a href="#lead-form">Enroll Now</a>
+          <Link to="/live">Enroll Now</Link>
         </Button>
       </div>
     </div>
@@ -568,7 +569,7 @@ export default function App() {
               <a href="#corporate" className="text-slate-600 hover:text-blue-600 transition-colors">Corporate</a>
             </div>
             <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-              <a href="#lead-form">Enroll Now</a>
+              <Link to="/live">Enroll Now</Link>
             </Button>
           </div>
         </nav>
@@ -742,10 +743,10 @@ export default function App() {
 
               <motion.div variants={fadeInUp}>
                 <Button asChild size="lg" className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-lg px-10 py-7 rounded-full shadow-lg hover:shadow-xl transition-all">
-                  <a href="#lead-form">
+                  <Link to="/live">
                     Enroll Now - It's FREE
                     <ArrowRight className="w-5 h-5 ml-2" />
-                  </a>
+                  </Link>
                 </Button>
               </motion.div>
 

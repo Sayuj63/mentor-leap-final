@@ -276,6 +276,17 @@ function RegistrationForm({ onSuccess }) {
       console.error("Failed to write lead to Google Sheets:", err);
     }
 
+    // ✅ Restore backend call for live viewer count
+    try {
+      await fetch('/api/join-live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+    } catch (err) {
+      console.error("Failed to update live viewers:", err);
+    }
+
     localStorage.setItem("mentorleap_v2_user", JSON.stringify({ name: userData.name, country: userData.country }));
 
     setTimeout(() => {
@@ -573,7 +584,7 @@ function LiveStream({ name, country }) {
           {/* Video */}
           <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
             <iframe
-              src="https://www.youtube.com/embed/O14LICwaUek"
+              src="https://www.youtube.com/embed/I6XgYzorrSY?autoplay=1&rel=0&modestbranding=1"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               title="MentorLeap Live Masterclass"
