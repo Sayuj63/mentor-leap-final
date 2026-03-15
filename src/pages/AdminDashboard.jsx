@@ -1,16 +1,80 @@
-import { useState } from "react";
-import { Users, MessageSquare, Video, Settings, LayoutDashboard, ChevronRight, LogOut, Search, Bell } from "lucide-react";
-
-const MOCK_MESSAGES = [
-  { id: 1, sender: "Rahul Sharma", text: "The frameworks discussed earlier are very practical. Can we get the slides later?", time: "2 mins ago", avatar: "RS", color: "bg-blue-500" },
-  { id: 2, sender: "Priya Jain", text: "I struggle with confidence during presentations. Excited for the mindset methodology part!", time: "just now", avatar: "PJ", color: "bg-purple-500" },
-  { id: 3, sender: "Arjun Kumar", text: "This makes so much sense. I used to think speaking fast meant speaking confidently.", time: "just now", avatar: "AK", color: "bg-orange-500" },
-  { id: 4, sender: "Neha Gupta", text: "Will there be a recording available for this?", time: "1 min ago", avatar: "NG", color: "bg-pink-500" },
-  { id: 5, sender: "Vivek Singh", text: "Can you elaborate more on the executive presence technique?", time: "just now", avatar: "VS", color: "bg-emerald-500" },
-];
+import { useState, useEffect, useRef } from "react";
+import { Users, MessageSquare, Video, Settings, LayoutDashboard, ChevronRight, LogOut, Search, Bell, Trash2, Download } from "lucide-react";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("chats"); // "chats" | "stream" | "overview"
+  const [liveData, setLiveData] = useState({ views: 0, messages: [] });
+  const [mainActionText, setMainActionText] = useState("Push \"Enroll Now\" CTA");
+  const chatEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+
+  // Poll live data
+  useEffect(() => {
+    const fetchLiveData = async () => {
+      try {
+        const res = await fetch('/api/live-data');
+        if (res.ok) {
+          const data = await res.json();
+          setLiveData(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch live data:", err);
+      }
+    };
+    fetchLiveData();
+    const interval = setInterval(fetchLiveData, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto scroll chat
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+  }, [liveData.messages]);
+
+  const handleClearChat = async () => {
+    if (!window.confirm("Are you sure you want to clear the entire chat?")) return;
+    try {
+      await fetch('/api/command/clear-chat', { method: 'POST' });
+    } catch (err) {
+      console.error("Failed to clear chat:", err);
+    }
+  };
+
+  const handleExportChat = () => {
+    window.open('/api/command/export-chat', '_blank');
+  };
+
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "";
+    try {
+      const d = new Date(timeStr);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return "just now";
+    }
+  };
+
+  const handlePushPoll = async (pollId, label) => {
+    try {
+      await fetch('/api/command/poll/activate', { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'}, 
+        body: JSON.stringify({ pollId }) 
+      });
+      if (pollId === 'close') {
+        setMainActionText("Push \"Enroll Now\" CTA");
+      } else {
+        setMainActionText(`Push ${label}`);
+      }
+    } catch (err) {
+      console.error("Failed to push poll:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -90,7 +154,7 @@ export default function AdminDashboard() {
             </div>
             <button className="relative text-slate-500 hover:text-slate-700 transition-colors">
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-2h-2 rounded-full bg-red-500 w-2.5 h-2.5 border-2 border-white"></span>
+              <span className="absolute -top-1 -right-1 rounded-full bg-red-500 w-2.5 h-2.5 border-2 border-white"></span>
             </button>
             <div className="flex items-center gap-2 cursor-pointer">
                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-inner"></div>
@@ -126,42 +190,68 @@ export default function AdminDashboard() {
               <div className="bg-slate-50 border-b border-slate-200 p-4 flex justify-between items-center">
                 <div className="flex gap-4">
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-slate-800">Total Viewers</span>
-                    <span className="text-2xl font-bold text-blue-600">1,204</span>
+                    <span className="text-sm font-semibold text-slate-800">Live Viewers</span>
+                    <span className="text-2xl font-bold text-blue-600">{liveData.views.toLocaleString()}</span>
                   </div>
                   <div className="w-px bg-slate-200 mx-2"></div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-slate-800">Chat Rate</span>
-                    <span className="text-2xl font-bold text-slate-700">18 <span className="text-sm text-slate-500 font-normal">msg/min</span></span>
+                    <span className="text-sm font-semibold text-slate-800">Total Messages</span>
+                    <span className="text-2xl font-bold text-slate-700">{liveData.messages.length}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="text-sm px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 font-medium text-slate-700 transition-colors">Export Chat</button>
-                  <button className="text-sm px-4 py-2 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 font-medium text-red-600 transition-colors">Clear All</button>
+                  <button 
+                    onClick={handleExportChat}
+                    className="text-sm px-4 py-2 border border-slate-200 rounded-lg hover:bg-white hover:border-slate-300 font-medium text-slate-700 transition-all flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export Chat
+                  </button>
+                  <button 
+                    onClick={handleClearChat}
+                    className="text-sm px-4 py-2 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 font-medium text-red-600 transition-all flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Clear All
+                  </button>
                 </div>
               </div>
               
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30">
-                {MOCK_MESSAGES.map((msg) => (
-                  <div key={msg.id} className="flex gap-4">
-                    <div className={`w-10 h-10 rounded-full ${msg.color} flex items-center justify-center flex-shrink-0 font-bold text-white shadow-sm`}>
-                      {msg.avatar}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <span className="font-semibold text-slate-900">{msg.sender}</span>
-                        <span className="text-xs text-slate-400">{msg.time}</span>
-                      </div>
-                      <div className="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm text-slate-700 text-sm inline-block">
-                        {msg.text}
-                      </div>
-                    </div>
-                    <div className="opacity-0 hover:opacity-100 flex items-center gap-2 transition-opacity">
-                      <button className="text-xs font-semibold text-red-600 hover:bg-red-50 px-2 py-1 rounded transition-colors">Delete</button>
-                      <button className="text-xs font-semibold text-slate-600 hover:bg-slate-100 px-2 py-1 rounded transition-colors">Reply</button>
-                    </div>
+              <div 
+                ref={chatContainerRef}
+                className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30"
+              >
+                {liveData.messages.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                    <MessageSquare className="w-12 h-12 mb-2 opacity-20" />
+                    <p>No messages to display</p>
                   </div>
-                ))}
+                ) : (
+                  liveData.messages.map((msg) => (
+                    <div key={msg.id} className="flex gap-4 group animate-fade-in transition-all">
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white shadow-sm"
+                        style={{ backgroundColor: msg.color || "#3b82f6" }}
+                      >
+                        {msg.initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="font-semibold text-slate-900 truncate" style={{ color: msg.color }}>{msg.sender}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">{formatTime(msg.time)}</span>
+                        </div>
+                        <div className="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm text-slate-700 text-sm inline-block max-w-[80%] break-words">
+                          {msg.text}
+                        </div>
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 flex items-center gap-2 transition-opacity">
+                        <button className="text-[10px] font-bold text-red-600 hover:bg-red-50 px-2 py-1 rounded-md transition-colors uppercase tracking-wider">Flag</button>
+                        <button className="text-[10px] font-bold text-slate-600 hover:bg-slate-100 px-2 py-1 rounded-md transition-colors uppercase tracking-wider">Reply</button>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <div ref={chatEndRef} />
               </div>
             </div>
           )}
@@ -184,15 +274,15 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                  <h3 className="font-semibold text-slate-900 text-lg mb-1">Stream Details</h3>
+                  <h3 className="font-semibold text-slate-900 text-lg mb-1" style={{ visibility: "visible" }}>Stream Details</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                     <div className="p-3 bg-slate-50 rounded-xl">
                       <p className="text-xs text-slate-500 uppercase font-semibold">Status</p>
                       <p className="font-bold text-emerald-600">Excellent (1080p)</p>
                     </div>
                     <div className="p-3 bg-slate-50 rounded-xl">
-                      <p className="text-xs text-slate-500 uppercase font-semibold">Uptime</p>
-                      <p className="font-bold text-slate-800">01:24:45</p>
+                      <p className="text-xs text-slate-500 uppercase font-semibold">Live Viewers</p>
+                      <p className="font-bold text-slate-800">{liveData.views.toLocaleString()}</p>
                     </div>
                     <div className="p-3 bg-slate-50 rounded-xl">
                       <p className="text-xs text-slate-500 uppercase font-semibold">Bitrate</p>
@@ -208,17 +298,52 @@ export default function AdminDashboard() {
 
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 h-fit">
                 <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                  <Users className="w-4 h-4 text-blue-500" /> Waitlist Actions
+                  <Users className="w-4 h-4 text-blue-500" /> Administrative Actions
                 </h3>
                 <div className="space-y-4">
-                   <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors shadow-sm text-sm">
-                     Push "Enroll Now" CTA
+                   <button 
+                     onClick={() => window.alert(`${mainActionText} Pushed! (Demo)`)}
+                     className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-sm"
+                   >
+                     {mainActionText}
                    </button>
-                   <button className="w-full py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium rounded-xl transition-colors text-sm">
-                     Show Poll: Feedback
-                   </button>
-                   <button className="w-full py-3 bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 font-medium rounded-xl transition-colors text-sm">
-                     End Stream
+
+                   <div className="pt-2 border-t border-slate-100">
+                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Live Interactions</p>
+                     <div className="grid grid-cols-1 gap-2">
+                       <button 
+                         onClick={() => handlePushPoll('opportunities', 'Talent vs Opps')}
+                         className="w-full py-2.5 bg-slate-50 border border-slate-200 hover:bg-white hover:border-blue-300 text-slate-700 font-semibold rounded-lg transition-all text-xs"
+                       >
+                         Push this Poll: Talent vs Opps
+                       </button>
+                       <button 
+                         onClick={() => handlePushPoll('skill', 'Skills')}
+                         className="w-full py-2.5 bg-slate-50 border border-slate-200 hover:bg-white hover:border-purple-300 text-slate-700 font-semibold rounded-lg transition-all text-xs"
+                       >
+                         Push this Poll: Skills
+                       </button>
+                       <button 
+                         onClick={() => handlePushPoll('sentence', 'Intro Blanks')}
+                         className="w-full py-2.5 bg-slate-50 border border-slate-200 hover:bg-white hover:border-emerald-300 text-slate-700 font-semibold rounded-lg transition-all text-xs"
+                       >
+                         Push this Task: Intro Blanks
+                       </button>
+                       <button 
+                         onClick={() => handlePushPoll('close')}
+                         className="w-full py-2.5 bg-red-50 border border-red-100 hover:bg-red-500 hover:text-white text-red-600 font-semibold rounded-lg transition-all text-xs"
+                       >
+                         Close Active Interaction
+                       </button>
+                     </div>
+                   </div>
+
+                   <button 
+                     onClick={handleExportChat}
+                     className="w-full py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+                   >
+                     <Download className="w-4 h-4" />
+                     Download Chat Log
                    </button>
                 </div>
               </div>

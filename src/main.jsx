@@ -6,6 +6,7 @@ import App from './App.jsx'
 import LivePage from './pages/LivePage.jsx'
 
 import AdminDashboard from './pages/AdminDashboard.jsx'
+import CommandPanel from './pages/CommandPanel.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />} />
         <Route path="/live" element={<LivePage />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/command-panel" element={<CommandPanel />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

@@ -24,6 +24,169 @@ const COUNTRY_CODES = [
   { code: "+254", flag: "🇰🇪", label: "Kenya", name: "Kenya" },
 ];
 
+function PollInteractive() {
+  const [activePoll, setActivePoll] = useState(null);
+  const [voted, setVoted] = useState(null); // stores { pollId, choice } or { pollId, text }
+  const [fillData, setFillData] = useState({ p1: "", p2: "", p3: "" });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchPoll = async () => {
+      try {
+        const res = await fetch('/api/poll');
+        const data = await res.json();
+        setActivePoll(data.activePoll);
+      } catch (err) {
+        console.error("Poll fetch error:", err);
+      }
+    };
+    fetchPoll();
+    const interval = setInterval(fetchPoll, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleVote = async (key) => {
+    if (loading || !activePoll) return;
+    setLoading(true);
+    try {
+      await fetch('/api/poll/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pollId: activePoll.id, vote: key })
+      });
+      setVoted({ pollId: activePoll.id, choice: key });
+    } catch (err) {
+      console.error("Vote error:", err);
+    }
+    setLoading(false);
+  };
+
+  const handleFillSubmit = async (e) => {
+    e.preventDefault();
+    if (loading || !activePoll) return;
+    const text = `I help "${fillData.p1}" achieve "${fillData.p2}" by doing "${fillData.p3}".`;
+    setLoading(true);
+    try {
+      await fetch('/api/poll/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pollId: activePoll.id, text })
+      });
+      // Also send to chat
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      setVoted({ pollId: activePoll.id, text });
+    } catch (err) {
+      console.error("Fill submit error:", err);
+    }
+    setLoading(false);
+  };
+
+  if (!activePoll) return null;
+
+  const isAlreadyVoted = voted && voted.pollId === activePoll.id;
+
+  return (
+    <div className="bg-[#1a2b45] border border-blue-500/30 rounded-2xl overflow-hidden shadow-2xl animate-in slide-in-from-right-4 duration-500">
+      <div className="p-5 border-b border-blue-500/20 bg-blue-600/5">
+        <span className="inline-flex items-center gap-1.5 bg-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md border border-blue-500/30 mb-3">
+          <span className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+          Live Interaction
+        </span>
+        <h3 className="text-lg font-bold text-white leading-tight">{activePoll.title}</h3>
+      </div>
+
+      <div className="p-5">
+        {activePoll.type === 'poll' ? (
+          <div className="space-y-3">
+            {!isAlreadyVoted ? (
+              activePoll.options.map((opt) => (
+                <button
+                  key={opt.key}
+                  disabled={loading}
+                  onClick={() => handleVote(opt.key)}
+                  className="w-full p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-blue-500 hover:bg-blue-600/10 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded border-2 border-slate-600 flex-shrink-0 group-hover:border-blue-500 flex items-center justify-center">
+                      <div className="w-2.5 h-2.5 rounded-sm bg-blue-500 scale-0 group-hover:scale-100 transition-transform" />
+                    </div>
+                    <span className="text-sm text-slate-200">{opt.key}. {opt.text}</span>
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="space-y-4 py-2">
+                {activePoll.options.map((opt) => {
+                  const pct = activePoll.mockResults[opt.key];
+                  return (
+                    <div key={opt.key} className="relative">
+                      <div className="flex justify-between items-center mb-1.5 px-1">
+                        <span className="text-xs font-semibold text-slate-300">{opt.text}</span>
+                        <span className="text-xs font-bold text-blue-400">{pct}%</span>
+                      </div>
+                      <div className="h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                        <div 
+                          className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(37,99,235,0.4)]"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                <p className="text-center text-xs font-bold text-emerald-400 mt-4 animate-bounce">✓ Vote Recorded! Thank you for participating.</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {!isAlreadyVoted ? (
+              <form onSubmit={handleFillSubmit} className="space-y-4">
+                <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 space-y-3">
+                  <p className="text-sm text-slate-400 font-medium">I help...</p>
+                  <input 
+                    placeholder="e.g. Students"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 transition-colors"
+                    value={fillData.p1} onChange={e => setFillData({...fillData, p1: e.target.value})}
+                  />
+                  <p className="text-sm text-slate-400 font-medium">achieve...</p>
+                  <input 
+                    placeholder="e.g. Confidence"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 transition-colors"
+                    value={fillData.p2} onChange={e => setFillData({...fillData, p2: e.target.value})}
+                  />
+                  <p className="text-sm text-slate-400 font-medium">by doing...</p>
+                  <input 
+                    placeholder="e.g. Masterclasses"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 transition-colors"
+                    value={fillData.p3} onChange={e => setFillData({...fillData, p3: e.target.value})}
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={loading || !fillData.p1 || !fillData.p2 || !fillData.p3}
+                  className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:hover:bg-orange-500 text-white font-black rounded-xl transition-all shadow-lg active:scale-95 text-sm uppercase tracking-wider"
+                >
+                  {loading ? "Submitting..." : "Submit to Chat"}
+                </button>
+              </form>
+            ) : (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-xl text-center">
+                <p className="text-emerald-400 font-bold mb-1">Awesome! 🚀</p>
+                <p className="text-slate-400 text-xs">Your introduction has been sent to the live chat.</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function RegistrationForm({ onSuccess }) {
   const [form, setForm] = useState({ fname: "", lname: "", email: "", countryCode: "+91", phone: "" });
   const [errors, setErrors] = useState({});
@@ -40,15 +203,25 @@ function RegistrationForm({ onSuccess }) {
     return e;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     setLoading(true);
     const country = COUNTRY_CODES.find((c) => c.code === form.countryCode)?.name || "Unknown";
+    
+    try {
+      await fetch('/api/join-live', { method: 'POST' });
+    } catch (err) {
+      console.error("Failed to update live viewers:", err);
+    }
+    
+    const userData = { name: `${form.fname} ${form.lname}`, country };
+    localStorage.setItem("mentorleap_v2_user", JSON.stringify(userData));
+    
     setTimeout(() => {
-      onSuccess({ name: `${form.fname} ${form.lname}`, country });
+      onSuccess(userData);
     }, 600);
   };
 
@@ -152,7 +325,36 @@ function RegistrationForm({ onSuccess }) {
 function LiveChat({ userName }) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [views, setViews] = useState(0);
   const chatEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  const shouldAutoScroll = useRef(true);
+
+  // Track if user has scrolled up
+  const handleScroll = () => {
+    const el = chatContainerRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    shouldAutoScroll.current = atBottom;
+  };
+
+  useEffect(() => {
+    const fetchLiveData = async () => {
+      try {
+        const res = await fetch('/api/live-data');
+        if (res.ok) {
+          const data = await res.json();
+          setViews(data.views);
+          setMessages(data.messages);
+        }
+      } catch (err) {
+        console.error("Failed to fetch live data:", err);
+      }
+    };
+    fetchLiveData();
+    const interval = setInterval(fetchLiveData, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getInitials = (name) => {
     if (!name) return "U";
@@ -163,20 +365,40 @@ function LiveChat({ userName }) {
     return name[0].toUpperCase();
   };
 
-  const handleSend = () => {
+  const formatTime = (timeStr) => {
+    if (!timeStr || timeStr === "just now") return "just now";
+    try {
+      const d = new Date(timeStr);
+      const now = new Date();
+      const diffSec = Math.floor((now - d) / 1000);
+      if (diffSec < 5) return "just now";
+      if (diffSec < 60) return `${diffSec}s ago`;
+      if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return "just now";
+    }
+  };
+
+  const handleSend = async () => {
     if (!inputValue.trim()) return;
     
-    const newMessage = {
-      id: Date.now(),
-      sender: userName || "User",
-      initials: getInitials(userName),
-      text: inputValue.trim(),
-      time: "just now",
-      isSelf: true
-    };
-    
-    setMessages([...messages, newMessage]);
+    const text = inputValue.trim();
     setInputValue("");
+    
+    try {
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender: userName || "User",
+          initials: getInitials(userName),
+          text
+        })
+      });
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -186,7 +408,12 @@ function LiveChat({ userName }) {
   };
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldAutoScroll.current && chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   }, [messages]);
 
   return (
@@ -196,26 +423,35 @@ function LiveChat({ userName }) {
         <h3 className="font-bold text-slate-100 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Chat
         </h3>
-        <span className="text-xs text-slate-400">1,204 watching</span>
+        <span className="text-xs text-slate-400 font-mono">{views.toLocaleString()} watching</span>
       </div>
       
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div 
+        ref={chatContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-3 space-y-2.5"
+        style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}
+      >
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
             <p className="text-sm text-slate-500 text-center">No messages yet.<br/>Be the first to say hi!</p>
           </div>
         ) : (
           messages.map((msg) => (
-            <div key={msg.id} className="flex gap-3 animate-fade-in">
-              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 font-bold text-white text-xs">
+            <div key={msg.id} className="flex gap-2.5 animate-fade-in group">
+              <div 
+                className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-[10px]"
+                style={{ backgroundColor: msg.color || "#3b82f6" }}
+              >
                 {msg.initials}
               </div>
-              <div>
-                <p className="text-xs text-slate-400 font-semibold mb-0.5">
-                  {msg.sender} <span className="font-normal text-slate-500 ml-1">{msg.time}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs leading-relaxed">
+                  <span className="font-semibold" style={{ color: msg.color || "#94a3b8" }}>{msg.sender}</span>
+                  <span className="text-slate-500 ml-1.5 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">{formatTime(msg.time)}</span>
                 </p>
-                <p className="text-sm text-slate-200">{msg.text}</p>
+                <p className="text-sm text-slate-200 leading-snug break-words">{msg.text}</p>
               </div>
             </div>
           ))
@@ -231,14 +467,14 @@ function LiveChat({ userName }) {
              value={inputValue}
              onChange={(e) => setInputValue(e.target.value)}
              onKeyDown={handleKeyDown}
-             placeholder={`Chat publicly as ${userName || "User"}...`} 
-             className="w-full bg-white/10 border border-white/20 text-white placeholder-slate-400 text-sm rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-colors"
+             placeholder={`Chat as ${userName || "User"}...`} 
+             className="w-full bg-white/10 border border-white/20 text-white placeholder-slate-400 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-colors"
            />
            <button 
              onClick={handleSend}
-             className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-5 font-bold flex items-center justify-center transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+             className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-4 font-bold flex items-center justify-center transition-all shadow-lg shadow-blue-500/20 active:scale-95"
            >
-             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                <line x1="22" y1="2" x2="11" y2="13"></line>
                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
              </svg>
@@ -296,6 +532,9 @@ function LiveStream({ name, country }) {
 
         {/* Sidebar */}
         <div className="flex flex-col gap-4">
+          {/* Active Interaction */}
+          <PollInteractive />
+
           {/* Welcome */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">👋 Welcome</p>
@@ -344,6 +583,18 @@ function LiveStream({ name, country }) {
 
 export default function LivePage() {
   const [viewer, setViewer] = useState(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("mentorleap_v2_user");
+    if (saved) {
+      try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setViewer(JSON.parse(saved));
+      } catch {
+        localStorage.removeItem("mentorleap_v2_user");
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">

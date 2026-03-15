@@ -6,6 +6,7 @@ import { Calendar, Users, Briefcase, TrendingUp, Target, Zap, CheckCircle2, Arro
 import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import PopUp from "./components/PopUp";
 import LeadForm from "./components/form";
+// eslint-disable-next-line no-unused-vars
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import logo from "./assets/logo.png";
 import heroImage from "./assets/img2.jpg";
@@ -153,7 +154,7 @@ function getTimeLeft() {
 
 function pad(n) { return String(n).padStart(2, "0"); }
 
-function BootcampUrgencyBlock({ accent }) {
+function BootcampUrgencyBlock() {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft());
   const [seatsLeft, setSeatsLeft] = useState(TOTAL_SEATS - INITIAL_SEATS_SOLD);
   const seatsRef = useRef(seatsLeft);
