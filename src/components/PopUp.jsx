@@ -148,21 +148,69 @@ export default function PopUp() {
                     handleClose();
                     navigate("/live");
                   }}
-                  className="group relative w-full bg-slate-900 text-white font-bold py-5 rounded-[24px] overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl shadow-blue-500/20"
+                  className={`group relative w-full font-black py-6 rounded-[28px] overflow-hidden transition-all active:scale-95 shadow-2xl ${
+                    timeLeft.over 
+                    ? "bg-gradient-to-r from-red-600 via-orange-500 to-red-600 bg-[length:200%_100%] animate-gradient-x shadow-red-500/40" 
+                    : "bg-slate-900 shadow-blue-500/20"
+                  }`}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative z-10 flex items-center justify-center gap-3 text-lg">
-                    {timeLeft.over ? "Join Stream Now" : "Secure Your Free Seat"}
-                    <Zap className="w-5 h-5 fill-white group-hover:animate-bounce" />
+                  {/* Shimmer / Scanner Effect */}
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-transform" />
+                  
+                  {/* Pulse Effect for LIVE state */}
+                  {timeLeft.over && (
+                    <div className="absolute inset-0 rounded-[28px] animate-ping bg-red-500/20 pointer-events-none" />
+                  )}
+
+                  <div className={`absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 transition-opacity ${timeLeft.over ? "opacity-0" : "opacity-0 group-hover:opacity-100"}`} />
+                  
+                  <span className="relative z-10 flex items-center justify-center gap-4 text-xl text-white tracking-tight">
+                    {timeLeft.over ? (
+                      <>
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                        </span>
+                        WE ARE LIVE! JOIN NOW
+                      </>
+                    ) : (
+                      "Secure Your Free Seat"
+                    )}
+                    <Zap className={`w-6 h-6 fill-white ${timeLeft.over ? "animate-bounce" : "group-hover:animate-bounce"}`} />
                   </span>
                 </button>
-                <p className="text-[11px] text-slate-400 mt-4 font-medium flex items-center justify-center gap-2">
-                   <Clock className="w-3 h-3" /> 15th March • 7:30 PM IST • Online
-                </p>
+                
+                {timeLeft.over && (
+                  <p className="text-[12px] text-red-500 mt-4 font-black flex items-center justify-center gap-2 animate-pulse">
+                     ● Hurry! Session in progress
+                  </p>
+                )}
+                
+                {!timeLeft.over && (
+                  <p className="text-[11px] text-slate-400 mt-4 font-medium flex items-center justify-center gap-2">
+                     <Clock className="w-3 h-3" /> 15th March • 7:30 PM IST • Online
+                  </p>
+                )}
               </div>
             </div>
           </div>
         </motion.div>
+
+        {/* Custom Animations for the "Poppy" look */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          @keyframes gradient-x {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 50%; }
+          }
+          .animate-gradient-x {
+            animation: gradient-x 3s ease infinite;
+          }
+        `}} />
       </div>
     </AnimatePresence>
   );
