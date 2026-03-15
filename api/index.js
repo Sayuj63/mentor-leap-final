@@ -62,7 +62,10 @@ function saveState() {
 const savedState = loadState();
 
 // ── State ──
+// We keep 'currentViews' as the EXTRAS beyond our hardcoded 500
 let currentViews = savedState?.currentViews || 0;
+const MIN_BASE_VIEWS = 500;
+
 let messageIdCounter = savedState?.messageIdCounter || 2000; 
 let chatMessages = savedState?.chatMessages || [
   { id: 999, sender: "MentorLeap", initials: "ML", text: "Welcome to the live session! Ask your questions here 🎉", time: new Date().toISOString(), color: "#3b82f6" }
@@ -479,9 +482,9 @@ function startSimulation() {
         pollVotes[pollId][pickedKey] = (pollVotes[pollId][pickedKey] || 0) + 1;
       }
     }
-    // random viewer fluctuations
-    const fluctuation = Math.floor(Math.random() * 5) - 1; // -1 to +3 (biased upwards)
-    currentViews = Math.max(10, currentViews + fluctuation); 
+    // random viewer fluctuations (extra viewers)
+    const fluctuation = Math.floor(Math.random() * 3) + 1; // Always +1 to +3 for growth
+    currentViews = currentViews + fluctuation; 
     
     saveState();
   }, chatSpeed / Math.max(1, botActivityLevel / 5));
@@ -513,11 +516,14 @@ function stopAutoViewerGrowth() {
 app.post('/api/join-live', (req, res) => {
   currentViews += 1;
   saveState();
-  res.status(200).json({ success: true, views: currentViews });
+  res.status(200).json({ success: true, views: MIN_BASE_VIEWS + currentViews });
 });
 
 app.get('/api/live-data', (req, res) => {
-  res.status(200).json({ views: currentViews, messages: chatMessages.slice(-80) });
+  res.status(200).json({ 
+    views: MIN_BASE_VIEWS + currentViews, 
+    messages: chatMessages.slice(-100) 
+  });
 });
 
 app.post('/api/chat', (req, res) => {
@@ -577,13 +583,14 @@ app.post('/api/command/auth', (req, res) => {
 // Get full state
 app.get('/api/command/state', (req, res) => {
   res.status(200).json({
-    views: currentViews,
-    messages: chatMessages.slice(-80),
+    views: MIN_BASE_VIEWS + currentViews,
+    messages: chatMessages.slice(-100),
     simulationRunning,
     chatSpeed,
     autoViewerGrowth,
     botActivityLevel,
     totalMessages: chatMessages.length,
+    extraViews: currentViews
   });
 });
 
