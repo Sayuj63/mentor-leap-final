@@ -7,6 +7,7 @@ import { Calendar, Users, Briefcase, TrendingUp, Target, Zap, CheckCircle2, Arro
 import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import PopUp from "./components/PopUp";
 import LeadForm from "./components/form";
+import MishaChat from "./components/MishaChat";
 // eslint-disable-next-line no-unused-vars
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import logo from "./assets/logo.png";
@@ -1379,18 +1380,8 @@ export default function App() {
         </p>
       </div>
 
-      {/* Floating WhatsApp MISHA Button */}
-      <a
-        href="https://wa.me/919892322427"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3.5 rounded-full shadow-2xl shadow-blue-900/30 hover:shadow-blue-900/50 transition-all hover:-translate-y-1 border border-white/20"
-      >
-        <div className="bg-white/20 p-1.5 rounded-full flex items-center justify-center">
-          <Zap className="w-5 h-5 text-white" fill="currentColor" />
-        </div>
-        <span className="font-bold text-sm tracking-wider">ASK ANYTHING</span>
-      </a>
+      {/* Misha AI Chatbot */}
+      <MishaChat />
     </div>
   );
 }
