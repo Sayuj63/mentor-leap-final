@@ -610,7 +610,7 @@ function LiveStream({ name, country }) {
       <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
           <h2 className="text-lg sm:text-2xl font-extrabold leading-tight">FREE Personality Development Masterclass</h2>
-          <p className="text-slate-400 text-sm mt-0.5">with Mridu Bhandari · 15 March 2026 · 7:30 PM IST</p>
+          <p className="text-slate-400 text-sm mt-0.5">Live Stream Session with Mridu Bhandari</p>
         </div>
         <span className="inline-flex items-center gap-1.5 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">
           <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block" />
@@ -647,7 +647,7 @@ function LiveStream({ name, country }) {
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">👋 Welcome</p>
             <p className="text-xl font-extrabold text-blue-400">{name}</p>
             {country && <p className="text-xs text-slate-400 mt-0.5">Joining from {country}</p>}
-            <p className="text-sm text-slate-400 mt-2 leading-relaxed">You&apos;re in! Sit back and enjoy the session. Comment on YouTube to ask questions.</p>
+            <p className="text-sm text-slate-400 mt-2 leading-relaxed">You&apos;re in! Sit back and enjoy the session. Use the live chat to ask your questions and engage with the community.</p>
           </div>
 
           {/* Agenda */}
