@@ -25,15 +25,46 @@ const transporter = nodemailer.createTransport({
 });
 
 // ═══════════════════════════════════════════════════════════════
-// LIVESTREAM SIMULATION ENGINE
-// ═══════════════════════════════════════════════════════════════
-
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTR6ZkqamEl_8z7e7Jeb31TRxo8nCUBxPr_X-c5CV95LWvZaks3-KXEdrtSOR1OQ91Pg/exec";
 const ADMIN_PASSWORD = "mentorleap2026";
 
+const STATE_FILE = join(__dirname, 'live_state.json');
+
+// ── Persistent State Logic ──
+function loadState() {
+  try {
+    if (fs.existsSync(STATE_FILE)) {
+      const data = fs.readFileSync(STATE_FILE, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error("Failed to load state:", err);
+  }
+  return null;
+}
+
+function saveState() {
+  try {
+    const state = {
+      currentViews,
+      chatMessages,
+      messageIdCounter,
+      pollVotes,
+      pollSubmissions,
+      activePoll
+    };
+    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+  } catch (err) {
+    console.error("Failed to save state:", err);
+  }
+}
+
+const savedState = loadState();
+
 // ── State ──
-let currentViews = 0;
-let messageIdCounter = 1000; // Start high for bots/simulation
-let chatMessages = [
+let currentViews = savedState?.currentViews || 0;
+let messageIdCounter = savedState?.messageIdCounter || 2000; 
+let chatMessages = savedState?.chatMessages || [
   { id: 999, sender: "MentorLeap", initials: "ML", text: "Welcome to the live session! Ask your questions here 🎉", time: new Date().toISOString(), color: "#3b82f6" }
 ];
 let simulationRunning = false;
@@ -44,9 +75,9 @@ let autoViewerInterval = null;
 let botActivityLevel = 5; // 1–10
 
 // ── Poll State ──
-let activePoll = null; // { id, title, options, type: 'poll'|'fill' }
-let pollVotes = {}; // pollId -> { optionKey -> count }
-let pollSubmissions = {}; // pollId -> [responses]
+let activePoll = savedState?.activePoll || null; 
+let pollVotes = savedState?.pollVotes || {}; 
+let pollSubmissions = savedState?.pollSubmissions || {}; 
 
 const PREDEFINED_POLLS = {
   opportunities: {
@@ -378,7 +409,8 @@ function addChatMessage(sender, initials, text, color) {
     color: color || "#3b82f6"
   };
   chatMessages.push(msg);
-  if (chatMessages.length > 500) chatMessages = chatMessages.slice(-500); // Increased buffer
+  if (chatMessages.length > 500) chatMessages = chatMessages.slice(-500); 
+  saveState(); // Save on every message
   return msg;
 }
 
@@ -447,10 +479,11 @@ function startSimulation() {
         pollVotes[pollId][pickedKey] = (pollVotes[pollId][pickedKey] || 0) + 1;
       }
     }
-
     // random viewer fluctuations
-    currentViews += Math.floor(Math.random() * 7) - 2; // -2 to +4
-    if (currentViews < 100) currentViews = 100;
+    const fluctuation = Math.floor(Math.random() * 5) - 1; // -1 to +3 (biased upwards)
+    currentViews = Math.max(10, currentViews + fluctuation); 
+    
+    saveState();
   }, chatSpeed / Math.max(1, botActivityLevel / 5));
 }
 
@@ -479,6 +512,7 @@ function stopAutoViewerGrowth() {
 
 app.post('/api/join-live', (req, res) => {
   currentViews += 1;
+  saveState();
   res.status(200).json({ success: true, views: currentViews });
 });
 
