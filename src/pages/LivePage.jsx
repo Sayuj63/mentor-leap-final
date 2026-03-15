@@ -573,7 +573,7 @@ function LiveStream({ name, country }) {
           {/* Video */}
           <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
             <iframe
-              src="https://www.youtube.com/embed/I6XgYzorrSY?autoplay=1&rel=0&modestbranding=1"
+              src="https://www.youtube.com/embed/O14LICwaUek"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               title="MentorLeap Live Masterclass"
