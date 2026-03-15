@@ -210,15 +210,24 @@ function RegistrationForm({ onSuccess }) {
     setErrors({});
     setLoading(true);
     const country = COUNTRY_CODES.find((c) => c.code === form.countryCode)?.name || "Unknown";
-    
+    const userData = { 
+      name: `${form.fname} ${form.lname}`, 
+      email: form.email,
+      phone: `${form.countryCode} ${form.phone}`,
+      country 
+    };
+
     try {
-      await fetch('/api/join-live', { method: 'POST' });
+      await fetch('/api/join-live', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
     } catch (err) {
       console.error("Failed to update live viewers:", err);
     }
     
-    const userData = { name: `${form.fname} ${form.lname}`, country };
-    localStorage.setItem("mentorleap_v2_user", JSON.stringify(userData));
+    localStorage.setItem("mentorleap_v2_user", JSON.stringify({ name: userData.name, country: userData.country }));
     
     setTimeout(() => {
       onSuccess(userData);
