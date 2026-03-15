@@ -64,7 +64,7 @@ const savedState = loadState();
 // ── State ──
 // We keep 'currentViews' as the EXTRAS beyond our hardcoded 500
 let currentViews = savedState?.currentViews || 0;
-const MIN_BASE_VIEWS = 1472;
+const MIN_BASE_VIEWS = 723;
 
 let messageIdCounter = savedState?.messageIdCounter || 2000; 
 let chatMessages = savedState?.chatMessages || [
