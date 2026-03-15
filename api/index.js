@@ -64,7 +64,7 @@ const savedState = loadState();
 // ── State ──
 // We keep 'currentViews' as the EXTRAS beyond our hardcoded 500
 let currentViews = savedState?.currentViews || 0;
-const MIN_BASE_VIEWS = 500;
+const MIN_BASE_VIEWS = 1127;
 
 let messageIdCounter = savedState?.messageIdCounter || 2000; 
 let chatMessages = savedState?.chatMessages || [
@@ -722,6 +722,7 @@ app.post('/api/command/poll/activate', (req, res) => {
       pollVotes[activePoll.id][opt.key] = Math.floor(Math.random() * 5);
     });
   }
+  saveState();
   res.status(200).json({ success: true, activePoll });
 });
 

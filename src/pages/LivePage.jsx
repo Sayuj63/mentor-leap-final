@@ -62,7 +62,13 @@ function PollInteractive() {
       try {
         const res = await fetch('/api/poll');
         const data = await res.json();
-        setActivePoll(data.activePoll);
+        setActivePoll(prev => {
+          if (data.activePoll?.id !== prev?.id) {
+            setVoted(null);
+            setFillData({ p1: "", p2: "", p3: "" });
+          }
+          return data.activePoll;
+        });
       } catch (err) {
         console.error("Poll fetch error:", err);
       }
