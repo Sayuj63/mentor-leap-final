@@ -1,11 +1,26 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "./components/ui/button";
 import { Card, CardContent } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
-import { Calendar, Users, Briefcase, TrendingUp, Target, Zap, CheckCircle2, ArrowRight, BookOpen, Mic, Star, Award, PlayCircle, Video, X } from "lucide-react";
-import { ImageWithFallback } from './components/figma/ImageWithFallback';
-import PopUp from "./components/PopUp";
+import {
+  Calendar,
+  Users,
+  Briefcase,
+  TrendingUp,
+  Target,
+  Zap,
+  CheckCircle2,
+  ArrowRight,
+  BookOpen,
+  Mic,
+  Star,
+  Award,
+  PlayCircle,
+  Video,
+} from "lucide-react";
+import { ImageWithFallback } from "./components/figma/ImageWithFallback";
+import ScrollVelocity from "./components/ui/scroll-velocity";
 import LeadForm from "./components/form";
 import MishaChat from "./components/MishaChat";
 // eslint-disable-next-line no-unused-vars
@@ -18,22 +33,37 @@ import section2Image from "./assets/1.JPG";
 import aiModelImage from "./assets/ai-model.png";
 import hire from "./assets/img7.JPG";
 
+// ---------------------------------------------------------------------------
+// Animation variants
+// ---------------------------------------------------------------------------
 const fadeInUp = {
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
+  transition: { duration: 0.6 },
 };
 
 const staggerContainer = {
   animate: {
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
+// ---------------------------------------------------------------------------
+// Inline SVG helpers
+// ---------------------------------------------------------------------------
 const CalendarIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
     <line x1="16" y1="2" x2="16" y2="6" />
     <line x1="8" y1="2" x2="8" y2="6" />
@@ -42,7 +72,16 @@ const CalendarIcon = () => (
 );
 
 const ArrowRightIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="5" y1="12" x2="19" y2="12" />
     <polyline points="12 5 19 12 12 19" />
   </svg>
@@ -54,6 +93,9 @@ const StarIcon = () => (
   </svg>
 );
 
+// ---------------------------------------------------------------------------
+// Program data
+// ---------------------------------------------------------------------------
 const masterclassFeatures = [
   "Communication Blueprint Framework",
   "Mindset Reset Methodology",
@@ -79,7 +121,8 @@ const programs = [
     badgeBorder: "rgba(16, 185, 129, 0.3)",
     seatLabel: "Limited Seats",
     title: "Free Personality Development Masterclass",
-    description: "This one-hour live and interactive masterclass introduces practical frameworks professionals can apply immediately in meetings, presentations and workplace discussions to increase their influence..",
+    description:
+      "This one-hour live and interactive masterclass introduces practical frameworks professionals can apply immediately in meetings, presentations and workplace discussions to increase their influence..",
     cardBg: "linear-gradient(145deg, #ffffff 0%, #f0fdf9 100%)",
     borderColor: "rgba(16, 185, 129, 0.2)",
     shadow: "0 8px 40px rgba(16, 185, 129, 0.08)",
@@ -110,7 +153,8 @@ const programs = [
     badgeBorder: "rgba(99, 102, 241, 0.3)",
     seatLabel: "Limited Seats",
     title: "Speak with Impact Bootcamp",
-    description: "The Speak with Impact Bootcamp is a two-day immersive learning experience designed to help professionals develop confident communication and structured thinking for the modern workplace.",
+    description:
+      "The Speak with Impact Bootcamp is a two-day immersive learning experience designed to help professionals develop confident communication and structured thinking for the modern workplace.",
     cardBg: "linear-gradient(145deg, #ffffff 0%, #f5f3ff 100%)",
     borderColor: "rgba(99, 102, 241, 0.2)",
     shadow: "0 8px 40px rgba(99, 102, 241, 0.08)",
@@ -137,27 +181,35 @@ const programs = [
   },
 ];
 
-// Countdown + seat counter for bootcamp card
+// ---------------------------------------------------------------------------
+// Urgency constants
+// ---------------------------------------------------------------------------
 const RAZORPAY_LINK = "https://rzp.io/l/xyXPRm3";
 const TOTAL_SEATS = 50;
 const INITIAL_SEATS_SOLD = 13;
-// Early bird ends March 14 2026 23:59:59 IST
 const EARLY_BIRD_END = new Date("2026-03-14T23:59:59+05:30").getTime();
 
 function getTimeLeft() {
   const diff = EARLY_BIRD_END - Date.now();
   if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, over: true };
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  return { days, hours, minutes, seconds, over: false };
+  return {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((diff % (1000 * 60)) / 1000),
+    over: false,
+  };
 }
 
-function pad(n) { return String(n).padStart(2, "0"); }
+function pad(n) {
+  return String(n).padStart(2, "0");
+}
 
+// ---------------------------------------------------------------------------
+// BootcampUrgencyBlock
+// ---------------------------------------------------------------------------
 function BootcampUrgencyBlock() {
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft());
+  const [timeLeft, setTimeLeft] = useState(getTimeLeft);
   const [seatsLeft, setSeatsLeft] = useState(TOTAL_SEATS - INITIAL_SEATS_SOLD);
   const seatsRef = useRef(seatsLeft);
 
@@ -167,9 +219,9 @@ function BootcampUrgencyBlock() {
   }, []);
 
   useEffect(() => {
-    // Decrease seats every 30–60 s, but never below 10
+    const timerId = { current: null };
     const scheduleDecrement = () => {
-      const delay = 30000 + Math.random() * 30000;
+      const delay = 30_000 + Math.random() * 30_000;
       return setTimeout(() => {
         if (seatsRef.current > 10) {
           seatsRef.current -= 1;
@@ -178,37 +230,77 @@ function BootcampUrgencyBlock() {
         timerId.current = scheduleDecrement();
       }, delay);
     };
-    const timerId = { current: scheduleDecrement() };
+    timerId.current = scheduleDecrement();
     return () => clearTimeout(timerId.current);
   }, []);
 
   return (
     <div style={{ margin: "0 0 18px", display: "flex", flexDirection: "column", gap: "10px" }}>
       {/* Seat counter */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: "8px",
-        background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)",
-        borderRadius: "10px", padding: "9px 14px",
-      }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          background: "rgba(239,68,68,0.08)",
+          border: "1px solid rgba(239,68,68,0.25)",
+          borderRadius: "10px",
+          padding: "9px 14px",
+        }}
+      >
         <span style={{ fontSize: "16px" }}>⚡</span>
         <span style={{ fontSize: "13px", fontWeight: 700, color: "#dc2626", letterSpacing: "0.01em" }}>
           Only {seatsLeft} / {TOTAL_SEATS} seats left
         </span>
-        <div style={{ flex: 1, height: "6px", borderRadius: "99px", background: "rgba(239,68,68,0.15)", overflow: "hidden", marginLeft: "4px" }}>
-          <div style={{ height: "100%", width: `${(seatsLeft / TOTAL_SEATS) * 100}%`, background: "linear-gradient(90deg,#ef4444,#f87171)", borderRadius: "99px", transition: "width 1s ease" }} />
+        <div
+          style={{
+            flex: 1,
+            height: "6px",
+            borderRadius: "99px",
+            background: "rgba(239,68,68,0.15)",
+            overflow: "hidden",
+            marginLeft: "4px",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${(seatsLeft / TOTAL_SEATS) * 100}%`,
+              background: "linear-gradient(90deg,#ef4444,#f87171)",
+              borderRadius: "99px",
+              transition: "width 1s ease",
+            }}
+          />
         </div>
       </div>
+
       {/* Countdown */}
       {!timeLeft.over && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: "8px",
-          background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.22)",
-          borderRadius: "10px", padding: "9px 14px",
-        }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "rgba(99,102,241,0.08)",
+            border: "1px solid rgba(99,102,241,0.22)",
+            borderRadius: "10px",
+            padding: "9px 14px",
+          }}
+        >
           <span style={{ fontSize: "15px" }}>⏳</span>
-          <span style={{ fontSize: "12px", color: "#6366f1", fontWeight: 600 }}>Early bird ends in&nbsp;</span>
-          <span style={{ fontSize: "13px", fontWeight: 800, color: "#4f46e5", fontVariantNumeric: "tabular-nums" }}>
-            {pad(timeLeft.days)}d : {pad(timeLeft.hours)}h : {pad(timeLeft.minutes)}m : {pad(timeLeft.seconds)}s
+          <span style={{ fontSize: "12px", color: "#6366f1", fontWeight: 600 }}>
+            Early bird ends in&nbsp;
+          </span>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: 800,
+              color: "#4f46e5",
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {pad(timeLeft.days)}d : {pad(timeLeft.hours)}h : {pad(timeLeft.minutes)}m :{" "}
+            {pad(timeLeft.seconds)}s
           </span>
         </div>
       )}
@@ -216,6 +308,9 @@ function BootcampUrgencyBlock() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// ProgramCard
+// ---------------------------------------------------------------------------
 function ProgramCard({ program }) {
   const [hovered, setHovered] = useState(false);
   const x = useMotionValue(0);
@@ -259,60 +354,91 @@ function ProgramCard({ program }) {
           boxShadow: hovered ? program.shadowHover : program.shadow,
         }}
       >
+        {/* Bootcamp blur overlay */}
         {program.isBootcamp && (
-          <div style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(255, 255, 255, 0.5)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
-            zIndex: 50,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <div style={{
-              background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
-              color: "#fff",
-              padding: "16px 32px",
-              borderRadius: "100px",
-              fontWeight: 800,
-              fontSize: "18px",
-              boxShadow: "0 10px 30px rgba(99,102,241,0.4)",
-              transform: "rotate(-5deg)",
-              border: "4px solid rgba(255,255,255,0.8)",
-              textAlign: "center"
-            }}>
-              🤫 Surprise!<br />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "rgba(255, 255, 255, 0.5)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              zIndex: 50,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+                color: "#fff",
+                padding: "16px 32px",
+                borderRadius: "100px",
+                fontWeight: 800,
+                fontSize: "18px",
+                boxShadow: "0 10px 30px rgba(99,102,241,0.4)",
+                transform: "rotate(-5deg)",
+                border: "4px solid rgba(255,255,255,0.8)",
+                textAlign: "center",
+              }}
+            >
+              🤫 Surprise!
+              <br />
               <span style={{ fontSize: "14px", fontWeight: 600 }}>Revealing on 15th March</span>
             </div>
           </div>
         )}
 
-        <div style={{ position: "absolute", top: 0, right: 0, width: "200px", height: "200px", background: program.accentGlow, borderRadius: "0 24px 0 100%", opacity: 0.4, pointerEvents: "none" }} />
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            width: "200px",
+            height: "200px",
+            background: program.accentGlow,
+            borderRadius: "0 24px 0 100%",
+            opacity: 0.4,
+            pointerEvents: "none",
+          }}
+        />
 
         <div style={{ padding: "28px 32px 0", position: "relative" }}>
-          {/* Early Bird badge — only for bootcamp */}
           {program.isBootcamp && (
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "center",
-              marginBottom: "14px",
-            }}>
-              <span style={{
-                background: "linear-gradient(135deg,#f59e0b,#ef4444)",
-                color: "#fff", fontSize: "12px", fontWeight: 800,
-                letterSpacing: "0.08em", padding: "7px 18px",
-                borderRadius: "100px", textTransform: "uppercase",
-                boxShadow: "0 2px 12px rgba(239,68,68,0.35)",
-                animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
-              }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "14px" }}>
+              <span
+                style={{
+                  background: "linear-gradient(135deg,#f59e0b,#ef4444)",
+                  color: "#fff",
+                  fontSize: "12px",
+                  fontWeight: 800,
+                  letterSpacing: "0.08em",
+                  padding: "7px 18px",
+                  borderRadius: "100px",
+                  textTransform: "uppercase",
+                  boxShadow: "0 2px 12px rgba(239,68,68,0.35)",
+                }}
+              >
                 🔥 50% OFF – Early Bird
               </span>
             </div>
           )}
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-            <span style={{ background: program.badgeBg, color: program.badgeColor, fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", padding: "6px 14px", borderRadius: "100px", textTransform: "uppercase", border: `1px solid ${program.badgeBorder}` }}>
+            <span
+              style={{
+                background: program.badgeBg,
+                color: program.badgeColor,
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                padding: "6px 14px",
+                borderRadius: "100px",
+                textTransform: "uppercase",
+                border: `1px solid ${program.badgeBorder}`,
+              }}
+            >
               {program.badge}
             </span>
             <span style={{ color: program.accent, fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "5px" }}>
@@ -320,7 +446,16 @@ function ProgramCard({ program }) {
             </span>
           </div>
 
-          <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(24px, 3vw, 30px)", fontWeight: 700, color: program.titleColor, lineHeight: 1.2, marginBottom: "12px" }}>
+          <h3
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "clamp(24px, 3vw, 30px)",
+              fontWeight: 700,
+              color: program.titleColor,
+              lineHeight: 1.2,
+              marginBottom: "12px",
+            }}
+          >
             {program.title}
           </h3>
           <p style={{ color: program.descColor, fontSize: "15px", lineHeight: 1.7, marginBottom: "24px" }}>
@@ -329,21 +464,31 @@ function ProgramCard({ program }) {
           <div style={{ height: "1px", background: program.divider, marginBottom: "24px" }} />
         </div>
 
+        {/* Date + Investment */}
         <div style={{ padding: "0 32px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
           <div style={{ background: program.tileBg, borderRadius: "14px", padding: "16px", border: `1px solid ${program.tileBorder}` }}>
-            <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: program.accent, fontWeight: 700, marginBottom: "6px" }}>Date</p>
+            <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: program.accent, fontWeight: 700, marginBottom: "6px" }}>
+              Date
+            </p>
             <p style={{ color: program.titleColor, fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ color: program.accent }}><CalendarIcon /></span> {program.date}
             </p>
           </div>
           <div style={{ background: program.tileBg, borderRadius: "14px", padding: "16px", border: `1px solid ${program.tileBorder}` }}>
-            <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: program.accent, fontWeight: 700, marginBottom: "6px" }}>Investment</p>
+            <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: program.accent, fontWeight: 700, marginBottom: "6px" }}>
+              Investment
+            </p>
             <p style={{ color: program.titleColor, fontWeight: 800, fontSize: "20px" }}>{program.price}</p>
-            {program.originalPrice && <p style={{ color: program.descColor, fontSize: "12px", textDecoration: "line-through" }}>{program.originalPrice}</p>}
-            {program.priceNote && <p style={{ color: program.accent, fontSize: "12px", fontWeight: 600 }}>{program.priceNote}</p>}
+            {program.originalPrice && (
+              <p style={{ color: program.descColor, fontSize: "12px", textDecoration: "line-through" }}>{program.originalPrice}</p>
+            )}
+            {program.priceNote && (
+              <p style={{ color: program.accent, fontSize: "12px", fontWeight: 600 }}>{program.priceNote}</p>
+            )}
           </div>
         </div>
 
+        {/* Features */}
         <div style={{ padding: "0 32px", marginBottom: "28px" }}>
           <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.12em", color: program.accent, fontWeight: 700, marginBottom: "14px" }}>
             What's included
@@ -351,7 +496,18 @@ function ProgramCard({ program }) {
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {program.features.map((feature) => (
               <div key={feature} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: program.checkBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    borderRadius: "50%",
+                    background: program.checkBg,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
                   <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
                     <path d="M2 6l3 3 5-5" stroke={program.checkColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -362,9 +518,9 @@ function ProgramCard({ program }) {
           </div>
         </div>
 
+        {/* CTA */}
         <div style={{ padding: "0 32px 32px" }}>
-          {/* Urgency block for bootcamp only */}
-          {program.isBootcamp && <BootcampUrgencyBlock accent={program.accent} />}
+          {program.isBootcamp && <BootcampUrgencyBlock />}
 
           {program.isBootcamp ? (
             <motion.a
@@ -374,13 +530,21 @@ function ProgramCard({ program }) {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               style={{
-                width: "100%", padding: "18px 24px",
+                width: "100%",
+                padding: "18px 24px",
                 background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
-                color: "#fff", border: "none", borderRadius: "14px",
-                fontSize: "16px", fontWeight: 800,
-                fontFamily: "'DM Sans', sans-serif", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                gap: "10px", letterSpacing: "0.01em",
+                color: "#fff",
+                border: "none",
+                borderRadius: "14px",
+                fontSize: "16px",
+                fontWeight: 800,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+                letterSpacing: "0.01em",
                 boxShadow: "0 4px 20px rgba(99,102,241,0.45)",
                 textDecoration: "none",
                 transition: "filter 0.2s, box-shadow 0.2s",
@@ -401,9 +565,27 @@ function ProgramCard({ program }) {
               href="/live"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              style={{ width: "100%", padding: "18px 24px", background: program.btnBg, color: program.btnColor, border: "none", borderRadius: "14px", fontSize: "16px", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "filter 0.2s", letterSpacing: "0.01em", textDecoration: "none" }}
-              onMouseEnter={(event) => { event.currentTarget.style.filter = "brightness(1.08)"; }}
-              onMouseLeave={(event) => { event.currentTarget.style.filter = "brightness(1)"; }}
+              style={{
+                width: "100%",
+                padding: "18px 24px",
+                background: program.btnBg,
+                color: program.btnColor,
+                border: "none",
+                borderRadius: "14px",
+                fontSize: "16px",
+                fontWeight: 700,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+                transition: "filter 0.2s",
+                letterSpacing: "0.01em",
+                textDecoration: "none",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.08)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; }}
             >
               {program.cta} <ArrowRightIcon />
             </motion.a>
@@ -414,6 +596,9 @@ function ProgramCard({ program }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// MasterclassAnnouncementBar
+// ---------------------------------------------------------------------------
 const MASTERCLASS_DATE = new Date("2026-03-15T19:30:00+05:30").getTime();
 
 function MasterclassAnnouncementBar() {
@@ -425,7 +610,7 @@ function MasterclassAnnouncementBar() {
       hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
       minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
       seconds: Math.floor((diff % (1000 * 60)) / 1000),
-      over: false
+      over: false,
     };
   });
 
@@ -441,7 +626,7 @@ function MasterclassAnnouncementBar() {
           hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
           minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
           seconds: Math.floor((diff % (1000 * 60)) / 1000),
-          over: false
+          over: false,
         });
       }
     }, 1000);
@@ -453,8 +638,7 @@ function MasterclassAnnouncementBar() {
   return (
     <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white py-2.5 px-4 sm:px-6 relative z-[60]">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6 text-sm">
-
-        <div className="flex items-center justify-center gap-2 text-center md:text-left hidden sm:flex">
+        <div className="hidden sm:flex items-center justify-center gap-2">
           <span className="animate-pulse">🔥</span>
           <span className="font-bold tracking-wide text-xs sm:text-sm uppercase text-yellow-300">
             Hurry! Free Masterclass Starts In:
@@ -483,7 +667,7 @@ function MasterclassAnnouncementBar() {
           </div>
         </div>
 
-        <Button asChild size="sm" className="h-8 bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg text-xs font-bold tracking-wide md:w-auto mt-0">
+        <Button asChild size="sm" className="h-8 bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg text-xs font-bold tracking-wide">
           <Link to="/live">Enroll Now</Link>
         </Button>
       </div>
@@ -491,68 +675,67 @@ function MasterclassAnnouncementBar() {
   );
 }
 
-function LivePopup() {
-  const [isVisible, setIsVisible] = useState(true);
-
-  if (!isVisible) return null;
-
+// ---------------------------------------------------------------------------
+// ComingSoonBanner — FIXED: proper full-screen blur backdrop
+// ---------------------------------------------------------------------------
+function ComingSoonBanner() {
   return (
-    <div className="fixed bottom-24 right-6 z-[100] flex flex-col items-end gap-3 pointer-events-none">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl p-4 shadow-2xl border border-red-100 flex flex-col gap-2 max-w-[300px] pointer-events-auto"
-      >
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-            </span>
-            <span className="font-bold text-slate-800 text-sm">MentorLeap is LIVE!</span>
-          </div>
-          <button 
-            onClick={() => setIsVisible(false)}
-            className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full p-1 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden">
+      {/* ✅ Full-screen blur + dim — blurs entire page behind the banner */}
+      <div className="absolute inset-0 bg-white/60 backdrop-blur-md" />
+
+      {/* Scrolling text — above backdrop, below card, non-interactive */}
+      <div className="absolute inset-0 flex flex-col justify-center pointer-events-none overflow-hidden">
+        <div className="w-[200vw] rotate-[-5deg]">
+          <ScrollVelocity
+            texts={["COMING SOON", "COMING SOON"]}
+            velocity={18}
+            className="text-7xl md:text-9xl font-black text-slate-900/10 tracking-tighter"
+          />
         </div>
-        <p className="text-xs text-slate-600 font-medium leading-relaxed">
-          The masterclass is currently running. Don't miss out, join the session right away!
-        </p>
-      </motion.div>
-      
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="pointer-events-auto w-full flex justify-end"
-      >
-        <a 
-          href="/live"
-          className="rounded-full shadow-lg shadow-red-500/30 bg-red-500 hover:bg-red-600 text-white font-bold px-8 h-12 transition-all hover:scale-105 flex items-center gap-2 text-base"
+        <div className="w-[200vw] rotate-[5deg]">
+          <ScrollVelocity
+            texts={["COMING SOON", "COMING SOON"]}
+            velocity={-18}
+            className="text-7xl md:text-9xl font-black text-slate-900/10 tracking-tighter uppercase"
+          />
+        </div>
+      </div>
+
+      {/* Central card */}
+      <div className="relative z-10 text-center pointer-events-auto bg-white/70 backdrop-blur-xl p-12 rounded-[60px] border border-white/30 shadow-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
         >
-          <Video className="w-5 h-5" />
-          Join Live
-        </a>
-      </motion.div>
+          <span className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-blue-600 text-white text-sm font-black uppercase tracking-[0.2em] mb-6 shadow-xl shadow-blue-500/30">
+            <Zap className="w-4 h-4 fill-white" /> Stay Tuned
+          </span>
+          <h1 className="text-6xl md:text-8xl font-black text-slate-900 tracking-tight mb-4">
+            COMING
+            <br />
+            <span className="text-blue-600">SOON</span>
+          </h1>
+          <p className="text-slate-600 text-lg md:text-xl font-medium max-w-md mx-auto">
+            We're polishing the final touches to bring you the best learning experience.
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }
 
+// ---------------------------------------------------------------------------
+// App
+// ---------------------------------------------------------------------------
 export default function App() {
   return (
     <div className="min-h-screen bg-white">
-      {/* <LivePopup /> Hidden for now */}
-      <PopUp />
+      <ComingSoonBanner />
 
       <div className="sticky top-0 z-[60] flex flex-col w-full shadow-sm">
-        {/* Promotional Banner */}
         <MasterclassAnnouncementBar />
-
-        {/* Navigation */}
         <nav className="bg-white/90 backdrop-blur-lg border-b border-slate-200">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <motion.div
@@ -576,56 +759,39 @@ export default function App() {
         </nav>
       </div>
 
-      {/* Hero Section */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Hero Section                                                         */}
+      {/* ------------------------------------------------------------------ */}
       <section className="relative pt-20 pb-24 px-6 bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-50 overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200 rounded-full blur-3xl opacity-20"></div>
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
+        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200 rounded-full blur-3xl opacity-20" />
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-indigo-200 rounded-full blur-3xl opacity-20" />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          {/* <motion.div
-            initial={{ opacity: 0, y: -14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-8 flex justify-center lg:justify-start"
-          >
-            <div className="group inline-flex items-center gap-3 rounded-full border border-blue-200 bg-white/90 backdrop-blur px-4 py-2 shadow-lg shadow-blue-100/80">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white">
-                <Zap className="w-4 h-4" />
-              </span>
-              <p className="text-sm md:text-base font-semibold text-slate-800">
-                Join <span className="text-blue-600">Personality Development Course</span>
-              </p>
-            </div>
-          </motion.div> */}
-
           <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-            {/* Heading - Order 1 on mobile */}
+            {/* Heading */}
             <motion.h1
               variants={fadeInUp}
               className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight order-1 lg:col-span-1"
             >
-              Learn to <span className="text-blue-600">Communicate</span> with Confidence & Clarity
+              Learn to <span className="text-blue-600">Communicate</span> with Confidence &amp; Clarity
             </motion.h1>
 
-            {/* Right Side - Image with Floating Elements - Order 2 on mobile */}
+            {/* Hero image */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative lg:h-[600px] flex items-center justify-center order-2 lg:row-span-3"
             >
-              {/* Main Image */}
               <div className="relative z-10">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-3xl blur-2xl opacity-20"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-3xl blur-2xl opacity-20" />
                 <img
                   src={heroImage}
                   alt="Mridu Bhandari - Leadership Mentor"
-                  className="relative rounded-3xl shadow-2xl w-full max-w-md object-cover  aspect-3/4"
+                  className="relative rounded-3xl shadow-2xl w-full max-w-md object-cover aspect-3/4"
                 />
               </div>
 
-              {/* Floating Badge - Top Right */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -645,7 +811,6 @@ export default function App() {
                 </div>
               </motion.div>
 
-              {/* Floating Badge - Left Side */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -665,7 +830,6 @@ export default function App() {
                 </div>
               </motion.div>
 
-              {/* Floating Badge - Bottom */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -674,13 +838,15 @@ export default function App() {
               >
                 <div className="bg-white rounded-2xl shadow-xl px-4 py-3 md:px-6 md:py-3 border border-slate-200">
                   <p className="text-center">
-                    <span className="text-sm text-slate-600">with</span> <span className="font-bold text-slate-900 text-lg">Mridu Bhandari</span>
+                    <span className="text-sm text-slate-600">with</span>{" "}
+                    <span className="font-bold text-slate-900 text-lg">Mridu Bhandari</span>
                   </p>
-                  <p className="text-xs text-slate-500 text-center">Award-Winning Journalist & Leadership Communication Coach</p>
+                  <p className="text-xs text-slate-500 text-center">
+                    Award-Winning Journalist &amp; Leadership Communication Coach
+                  </p>
                 </div>
               </motion.div>
 
-              {/* Floating Icon - Top Left */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -691,7 +857,6 @@ export default function App() {
                 </div>
               </motion.div>
 
-              {/* Floating Icon - Bottom Right */}
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
@@ -703,7 +868,7 @@ export default function App() {
               </motion.div>
             </motion.div>
 
-            {/* Remaining Content - Order 3 on mobile */}
+            {/* Feature list + CTA */}
             <motion.div
               initial="initial"
               animate="animate"
@@ -720,30 +885,32 @@ export default function App() {
                     <p className="text-slate-600">24×7 intelligent mentorship support</p>
                   </div>
                 </div>
-
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-lg font-semibold text-slate-900">Live Bootcamps & Masterclasses</p>
+                    <p className="text-lg font-semibold text-slate-900">Live Bootcamps &amp; Masterclasses</p>
                     <p className="text-slate-600">Interactive sessions with industry experts</p>
                   </div>
                 </div>
-
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <p className="text-lg font-semibold text-slate-900">Proven Leadership Frameworks</p>
-                    <p className="text-slate-600">Build executive presence & career confidence</p>
+                    <p className="text-slate-600">Build executive presence &amp; career confidence</p>
                   </div>
                 </div>
               </motion.div>
 
               <motion.div variants={fadeInUp}>
-                <Button asChild size="lg" className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-lg px-10 py-7 rounded-full shadow-lg hover:shadow-xl transition-all">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-lg px-10 py-7 rounded-full shadow-lg hover:shadow-xl transition-all"
+                >
                   <Link to="/live">
                     Enroll Now - It's FREE
                     <ArrowRight className="w-5 h-5 ml-2" />
@@ -751,16 +918,12 @@ export default function App() {
                 </Button>
               </motion.div>
 
-              {/* Social Proof */}
-              <motion.div
-                variants={fadeInUp}
-                className="flex items-center gap-6 pt-4"
-              >
+              <motion.div variants={fadeInUp} className="flex items-center gap-6 pt-4">
                 <div className="flex -space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500 border-2 border-white"></div>
-                  <div className="w-10 h-10 rounded-full bg-indigo-500 border-2 border-white"></div>
-                  <div className="w-10 h-10 rounded-full bg-purple-500 border-2 border-white"></div>
-                  <div className="w-10 h-10 rounded-full bg-pink-500 border-2 border-white"></div>
+                  <div className="w-10 h-10 rounded-full bg-blue-500 border-2 border-white" />
+                  <div className="w-10 h-10 rounded-full bg-indigo-500 border-2 border-white" />
+                  <div className="w-10 h-10 rounded-full bg-purple-500 border-2 border-white" />
+                  <div className="w-10 h-10 rounded-full bg-pink-500 border-2 border-white" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1 mb-1">
@@ -769,14 +932,15 @@ export default function App() {
                     ))}
                   </div>
                   <p className="text-sm text-slate-600">
-                    <span className="font-semibold text-slate-900">500+ professionals</span> transformed their communication
+                    <span className="font-semibold text-slate-900">500+ professionals</span> transformed their
+                    communication
                   </p>
                 </div>
               </motion.div>
             </motion.div>
           </div>
 
-          {/* Bottom Stats Bar */}
+          {/* Bottom stats bar */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -804,7 +968,9 @@ export default function App() {
         </div>
       </section>
 
-      {/* About Section */}
+      {/* ------------------------------------------------------------------ */}
+      {/* About Section                                                        */}
+      {/* ------------------------------------------------------------------ */}
       <section id="about" className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -828,35 +994,38 @@ export default function App() {
               transition={{ duration: 0.6 }}
               className="space-y-6 order-1 lg:order-2"
             >
-              <Badge className="bg-blue-50 text-blue-700 border-blue-200">
-                About MentorLeap
-              </Badge>
+              <Badge className="bg-blue-50 text-blue-700 border-blue-200">About MentorLeap</Badge>
               <h2 className="text-4xl md:text-5xl font-bold text-slate-900">
-                Bridge the Gap Between <span className="text-blue-600">Knowledge and Influence</span>
+                Bridge the Gap Between{" "}
+                <span className="text-blue-600">Knowledge and Influence</span>
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed">
-                Many professionals have strong expertise but struggle to communicate ideas with clarity and confidence.
-                MentorLeap provides structured frameworks that help individuals express ideas effectively,
-                build executive presence, and lead conversations with authority.
+                Many professionals have strong expertise but struggle to communicate ideas with clarity and
+                confidence. MentorLeap provides structured frameworks that help individuals express ideas
+                effectively, build executive presence, and lead conversations with authority.
               </p>
               <p className="text-lg text-slate-600 leading-relaxed">
-                Founded by <span className="font-semibold text-blue-600">award-winning journalist and leadership moderator Mridu Bhandari</span>,
-                the platform combines real-world communication experience with AI-powered learning tools.
+                Founded by{" "}
+                <span className="font-semibold text-blue-600">
+                  award-winning journalist and leadership moderator Mridu Bhandari
+                </span>
+                , the platform combines real-world communication experience with AI-powered learning tools.
               </p>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* MISHA Section with AI Background */}
+      {/* ------------------------------------------------------------------ */}
+      {/* MISHA Section                                                        */}
+      {/* ------------------------------------------------------------------ */}
       <section id="misha" className="py-20 px-6 relative overflow-hidden">
-        {/* AI Background Image */}
-        <div className="absolute inset-0 ">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-slate-50 to-blue-50"></div>
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-slate-50 to-blue-50" />
           <ImageWithFallback
             src={aiModelImage}
             alt="AI Technology Background"
-            className="w-full h-full object-contain  opacity-50"
+            className="w-full h-full object-contain opacity-50"
           />
         </div>
 
@@ -890,7 +1059,7 @@ export default function App() {
                       { letter: "I", title: "Increase your visibility", desc: "Build your professional presence" },
                       { letter: "S", title: "Strengthen your voice", desc: "Communicate with clarity and confidence" },
                       { letter: "H", title: "Humanise your leadership", desc: "Lead with empathy and authenticity" },
-                      { letter: "A", title: "Accelerate your growth", desc: "Fast-track your professional development" }
+                      { letter: "A", title: "Accelerate your growth", desc: "Fast-track your professional development" },
                     ].map((item, index) => (
                       <motion.div
                         key={item.letter}
@@ -929,7 +1098,7 @@ export default function App() {
                       "Presentation and keynote structuring",
                       "Investor pitch refinement",
                       "Professional communication improvement",
-                      "Career clarity and leadership development"
+                      "Career clarity and leadership development",
                     ].map((item, index) => (
                       <motion.div
                         key={item}
@@ -957,7 +1126,9 @@ export default function App() {
         </div>
       </section>
 
-      {/* Programs Section with Images */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Programs Section                                                     */}
+      {/* ------------------------------------------------------------------ */}
       <section id="programs" className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -966,9 +1137,7 @@ export default function App() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <Badge className="bg-blue-50 text-blue-700 border-blue-200 mb-4">
-              Our Programs
-            </Badge>
+            <Badge className="bg-blue-50 text-blue-700 border-blue-200 mb-4">Our Programs</Badge>
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
               Transform Your <span className="text-blue-600">Leadership Journey</span>
             </h2>
@@ -976,12 +1145,7 @@ export default function App() {
 
           <div className="space-y-8">
             {/* Executive Coaching */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
               <Card className="overflow-hidden border-slate-200 hover:shadow-xl transition-shadow">
                 <div className="grid md:grid-cols-2">
                   <CardContent className="p-8 flex flex-col justify-center">
@@ -997,34 +1161,19 @@ export default function App() {
                       <a href="#lead-form">Learn More</a>
                     </Button>
                   </CardContent>
-                  <div className="relative h-64 md:h-auto ">
-                    <ImageWithFallback
-                      // src="https://images.unsplash.com/photo-1745970347652-8f22f5d7d3ba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxleGVjdXRpdmUlMjBidXNpbmVzcyUyMGNvYWNoaW5nJTIwb2ZmaWNlfGVufDF8fHx8MTc3MjY5MjczNXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                      src={program1}
-                      alt="Executive Coaching"
-                      className="w-full h-full object-cover "
-                    />
+                  <div className="relative h-64 md:h-auto">
+                    <ImageWithFallback src={program1} alt="Executive Coaching" className="w-full h-full object-cover" />
                   </div>
                 </div>
               </Card>
             </motion.div>
 
             {/* Live Events */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}>
               <Card className="overflow-hidden border-slate-200 hover:shadow-xl transition-shadow">
                 <div className="grid md:grid-cols-2">
                   <div className="relative h-64 md:h-auto order-2 md:order-1">
-                    <ImageWithFallback
-                      // src="https://images.unsplash.com/photo-1765438863717-49fca900f861?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3Jwb3JhdGUlMjB0cmFpbmluZyUyMGNvbmZlcmVuY2V8ZW58MXx8fHwxNzcyNjkyNzM2fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                      src={program2}
-                      alt="Live Events"
-                      className="w-full h-full object-cover"
-                    />
+                    <ImageWithFallback src={program2} alt="Live Events" className="w-full h-full object-cover" />
                   </div>
                   <CardContent className="p-8 flex flex-col justify-center order-1 md:order-2">
                     <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mb-4">
@@ -1044,12 +1193,7 @@ export default function App() {
             </motion.div>
 
             {/* Resource Library */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }}>
               <Card className="overflow-hidden border-slate-200 hover:shadow-xl transition-shadow">
                 <div className="grid md:grid-cols-2">
                   <CardContent className="p-8 flex flex-col justify-center">
@@ -1067,7 +1211,7 @@ export default function App() {
                   </CardContent>
                   <div className="relative h-64 md:h-auto">
                     <ImageWithFallback
-                      src="https://images.unsplash.com/photo-1628130421517-649b3ecaf514?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMGxpYnJhcnklMjByZXNvdXJjZXMlMjBib29rc3xlbnwxfHx8fDE3NzI2OTI3Mzd8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                      src="https://images.unsplash.com/photo-1628130421517-649b3ecaf514?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMGxpYnJhcnklMjByZXNvdXJjZXMlMjBib29rc3xlbnwxfHx8fDE3NzI2OTI3Mzd8MA&ixlib=rb-4.1.0&q=80&w=1080"
                       alt="Resource Library"
                       className="w-full h-full object-cover"
                     />
@@ -1077,21 +1221,11 @@ export default function App() {
             </motion.div>
 
             {/* Hire Mridu */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }}>
               <Card className="overflow-hidden border-slate-200 hover:shadow-xl transition-shadow">
                 <div className="grid md:grid-cols-2">
                   <div className="relative h-64 md:h-auto order-2 md:order-1">
-                    <ImageWithFallback
-                      src={hire}
-                      // src="https://images.unsplash.com/photo-1720874129553-1d2e66076b16?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB3b21hbiUyMGtleW5vdGUlMjBzcGVha2VyfGVufDF8fHx8MTc3MjY5MjczNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                      alt="Hire Mridu"
-                      className="w-full h-full object-cover"
-                    />
+                    <ImageWithFallback src={hire} alt="Hire Mridu" className="w-full h-full object-cover" />
                   </div>
                   <CardContent className="p-8 flex flex-col justify-center order-1 md:order-2">
                     <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mb-4">
@@ -1099,8 +1233,8 @@ export default function App() {
                     </div>
                     <h3 className="text-3xl font-bold text-slate-900 mb-3">Hire Mridu</h3>
                     <p className="text-lg text-slate-600 mb-4">
-                      Professional moderation, event hosting, and leadership speaking engagements.
-                      Bring award-winning expertise to your next event.
+                      Professional moderation, event hosting, and leadership speaking engagements. Bring
+                      award-winning expertise to your next event.
                     </p>
                     <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white w-fit">
                       <a href="#lead-form">Book Mridu</a>
@@ -1113,7 +1247,9 @@ export default function App() {
         </div>
       </section>
 
-      {/* Upcoming Programs */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Upcoming Programs (dark section)                                    */}
+      {/* ------------------------------------------------------------------ */}
       <section
         className="programs-section"
         style={{
@@ -1129,39 +1265,9 @@ export default function App() {
           .programs-section * { box-sizing: border-box; }
         `}</style>
 
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            opacity: 0.04,
-            backgroundImage:
-              "repeating-linear-gradient(90deg, #ffffff 0px, #ffffff 1px, transparent 1px, transparent 80px), repeating-linear-gradient(0deg, #ffffff 0px, #ffffff 1px, transparent 1px, transparent 80px)",
-            pointerEvents: "none",
-          }}
-        />
-
-        <div
-          style={{
-            position: "absolute",
-            top: "-80px",
-            left: "-80px",
-            width: "500px",
-            height: "500px",
-            background: "radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-100px",
-            right: "-100px",
-            width: "600px",
-            height: "600px",
-            background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
+        <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "repeating-linear-gradient(90deg,#ffffff 0px,#ffffff 1px,transparent 1px,transparent 80px),repeating-linear-gradient(0deg,#ffffff 0px,#ffffff 1px,transparent 1px,transparent 80px)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", top: "-80px", left: "-80px", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "-100px", right: "-100px", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
 
         <div style={{ maxWidth: "1180px", margin: "0 auto", position: "relative", zIndex: 1 }}>
           <motion.div
@@ -1179,26 +1285,9 @@ export default function App() {
               <div style={{ height: "1px", width: "48px", background: "linear-gradient(to left, transparent, rgba(6,182,212,0.7))" }} />
             </div>
 
-            <h2
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: "clamp(36px, 5vw, 64px)",
-                fontWeight: 800,
-                color: "#f8fafc",
-                lineHeight: 1.1,
-                letterSpacing: "-0.02em",
-                marginBottom: "20px",
-              }}
-            >
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 800, color: "#f8fafc", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: "20px" }}>
               Your Next{" "}
-              <span
-                style={{
-                  fontStyle: "italic",
-                  background: "linear-gradient(135deg, #22d3ee, #818cf8)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
+              <span style={{ fontStyle: "italic", background: "linear-gradient(135deg, #22d3ee, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 Leadership Leap
               </span>
               <br />
@@ -1233,15 +1322,12 @@ export default function App() {
         </div>
       </section>
 
-      {/* Why Choose MentorLeap */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Why Choose MentorLeap                                               */}
+      {/* ------------------------------------------------------------------ */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
               Why Professionals Choose <span className="text-blue-600">MentorLeap</span>
             </h2>
@@ -1249,14 +1335,14 @@ export default function App() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { icon: Target, title: "Clarity in Communication", desc: "Structured frameworks for expressing ideas clearly." },
-              { icon: Zap, title: "Strategic Thinking", desc: "Approaches that help professionals think and communicate effectively." },
-              { icon: Briefcase, title: "AI Learning Support", desc: "Continuous guidance through MISHA." },
-              { icon: Users, title: "Leadership Presence", desc: "Build confidence to lead discussions and influence teams." },
-              { icon: TrendingUp, title: "Career Growth", desc: "Develop the skills required for long-term professional advancement." }
-            ].map((item, index) => (
+              { Icon: Target, title: "Clarity in Communication", desc: "Structured frameworks for expressing ideas clearly." },
+              { Icon: Zap, title: "Strategic Thinking", desc: "Approaches that help professionals think and communicate effectively." },
+              { Icon: Briefcase, title: "AI Learning Support", desc: "Continuous guidance through MISHA." },
+              { Icon: Users, title: "Leadership Presence", desc: "Build confidence to lead discussions and influence teams." },
+              { Icon: TrendingUp, title: "Career Growth", desc: "Develop the skills required for long-term professional advancement." },
+            ].map(({ Icon, title, desc }, index) => (
               <motion.div
-                key={item.title}
+                key={title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -1264,29 +1350,24 @@ export default function App() {
                 className="text-center space-y-4"
               >
                 <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto">
-                  <item.icon className="w-8 h-8 text-white" />
+                  <Icon className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900">{item.title}</h3>
-                <p className="text-slate-600">{item.desc}</p>
+                <h3 className="text-2xl font-bold text-slate-900">{title}</h3>
+                <p className="text-slate-600">{desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Corporate Training */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Corporate Training                                                   */}
+      {/* ------------------------------------------------------------------ */}
       <section id="corporate" className="py-20 px-6 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="space-y-6"
-            >
-              <Badge className="bg-white/20 text-white border-white/30">
-                Corporate Solutions
-              </Badge>
+            <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="space-y-6">
+              <Badge className="bg-white/20 text-white border-white/30">Corporate Solutions</Badge>
               <h2 className="text-4xl md:text-5xl font-bold">Corporate Leadership Training</h2>
               <p className="text-xl text-slate-300 leading-relaxed">
                 MentorLeap delivers high-impact communication training for organizations and leadership teams.
@@ -1301,14 +1382,9 @@ export default function App() {
                 </a>
               </Button>
             </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
+            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1758873268631-fa944fc5cad2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaXZlcnNlJTIwcHJvZmVzc2lvbmFscyUyMHRlYW13b3JrfGVufDF8fHx8MTc3MjY5MTg2OHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                src="https://images.unsplash.com/photo-1758873268631-fa944fc5cad2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaXZlcnNlJTIwcHJvZmVzc2lvbmFscyUyMHRlYW13b3JrfGVufDF8fHx8MTc3MjY5MTg2OHww&ixlib=rb-4.1.0&q=80&w=1080"
                 alt="Corporate training"
                 className="rounded-2xl shadow-2xl w-full object-cover aspect-[4/3]"
               />
@@ -1319,7 +1395,9 @@ export default function App() {
 
       <LeadForm />
 
-      {/* Final CTA Section */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Final CTA                                                            */}
+      {/* ------------------------------------------------------------------ */}
       <section className="py-24 px-6 bg-gradient-to-br from-blue-600 to-blue-700 text-white">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -1327,9 +1405,7 @@ export default function App() {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center space-y-8"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold">
-            Begin Your Leadership Transformation
-          </h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold">Begin Your Leadership Transformation</h2>
           <p className="text-xl text-blue-100 leading-relaxed">
             Join professionals preparing to strengthen their communication, leadership presence, and career clarity with MentorLeap and MISHA.
           </p>
@@ -1361,7 +1437,9 @@ export default function App() {
         </motion.div>
       </section>
 
-      {/* Footer */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Footer                                                               */}
+      {/* ------------------------------------------------------------------ */}
       <footer className="bg-slate-900 text-slate-300 py-12 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -1373,14 +1451,20 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Copyright Attribution */}
       <div className="bg-slate-950 py-6 px-6 text-center border-t border-slate-800/50">
         <p className="text-slate-500 text-xs tracking-widest uppercase">
-          Powered by <a href="https://www.marktaleworld.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 font-medium transition-colors duration-300">Marktale</a>
+          Powered by{" "}
+          <a
+            href="https://www.marktaleworld.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:text-blue-400 font-medium transition-colors duration-300"
+          >
+            Marktale
+          </a>
         </p>
       </div>
 
-      {/* Misha AI Chatbot */}
       <MishaChat />
     </div>
   );
